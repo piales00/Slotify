@@ -2,6 +2,7 @@ package org.Catalogo;
 
 // SKU, familia/grupo de producto, volumen, peso, demanda/rotación, clasificación ABC, herramienta de picking requerida (manual, montacargas, grúa).
 public class Producto {
+  private String nombre;
   private String SKU;
   private String familia;
   private Double volumen;
@@ -9,9 +10,12 @@ public class Producto {
   private int rotacion;
   private String clasificacion;
   private String herramientaPicking;
+  public int posicion;
 
-  public Producto(String SKU, String familia, Double volumen, Double peso, int rotacion, String clasificacion,
+  public Producto(String nombre, String SKU, String familia, Double volumen, Double peso, int rotacion,
+      String clasificacion,
       String herramientaPicking) {
+    this.nombre = nombre;
     this.SKU = SKU;
     this.familia = familia;
     this.volumen = volumen;
@@ -19,6 +23,15 @@ public class Producto {
     this.rotacion = rotacion;
     this.clasificacion = clasificacion;
     this.herramientaPicking = herramientaPicking;
+  }
+
+  // nombre encapsulacion
+  public String getNombre() {
+    return nombre;
+  }
+
+  public void setNombre(String newNombre) {
+    this.nombre = newNombre;
   }
 
   // SKU encapsulación
