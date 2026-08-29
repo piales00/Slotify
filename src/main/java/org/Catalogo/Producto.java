@@ -12,6 +12,14 @@ public class Producto {
   private String herramientaPicking;
   public int posicion;
 
+  public Producto() {
+
+  }
+
+  public Producto(String nombre) {
+    this.nombre = nombre;
+  }
+
   public Producto(String nombre, String SKU, String familia, Double volumen, Double peso, int rotacion,
       String clasificacion,
       String herramientaPicking) {
@@ -95,6 +103,11 @@ public class Producto {
 
   public void setHerramienta(String newHerramienta) {
     this.herramientaPicking = newHerramienta;
+  }
+
+  @Override
+  public String toString() {
+    return "Producto: " + this.nombre + " posicion: " + this.posicion;
   }
 
 }
