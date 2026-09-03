@@ -11,8 +11,6 @@ public class Utils {
     Scanner sc = SharedScanner.getInstancia().getScanner();
     Producto p = new Producto();
 
-
-
     // crear nombre
     System.out.println("Introduce el nombre de tu nuevo producto: ");
     p.setNombre(sc.nextLine());

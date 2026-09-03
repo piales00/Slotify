@@ -4,7 +4,7 @@ public class Catalogo {
 
   private int totalProductos;
   private Producto[] productos;
-  private int numeroActualProductos;
+  public int numeroActualProductos;
 
   public Catalogo(int totalProductos) {
     this.totalProductos = totalProductos;
@@ -51,6 +51,7 @@ public class Catalogo {
       return;
     }
     System.out.println(numeroActualProductos);
+    System.out.println(producto.posicion);
     System.out.println("el producto a eliminar es " + producto);
     for (int i = producto.posicion; i < numeroActualProductos; i++) {
       if (i == numeroActualProductos) {
@@ -61,8 +62,9 @@ public class Catalogo {
 
       System.out.println("estoy reemplazando el valor de " + productos[i] + " por " + productos[i + 1]);
       productos[i] = productos[i + 1];
-      numeroActualProductos--;
     }
+
+    numeroActualProductos--;
 
   }
 
@@ -89,8 +91,21 @@ public class Catalogo {
     return null;
   }
 
-  // TODO: Implementar ordenammiento por nombre
   public void ordenarProductosPorNombre() {
+
+    for (int i = 0; i < numeroActualProductos - 1; i++) {
+      for (int j = 0; j < numeroActualProductos - 1 - i; j++) {
+        Producto temp;
+        int comparacion = productos[j].getNombre().compareTo(productos[j + 1].getNombre());
+        if (comparacion > 0) {
+          temp = productos[j];
+          productos[j] = productos[j + 1];
+          productos[j + 1] = temp;
+        }
+
+      }
+    }
+
   }
 
   // TODO Implementar ordenamiento de productos por rotacion

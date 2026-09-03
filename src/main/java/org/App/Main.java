@@ -10,19 +10,27 @@ public class Main {
   public static final Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
-    System.out.println("products testing");
-    System.out.println("Creando producto");
+    System.out.println("MAIN TESTING");
+    System.out.println("CREANDO PRODUCTOS");
     Catalogo catalogo = new Catalogo(10);
-    Producto producto2 = Utils.crearNuevoProducto();
-    System.out.println("---------------");
+    Producto producto1 = new Producto("Filtro");
+    Producto producto2 = new Producto("Motor");
+    Producto producto3 = new Producto("Avion");
 
-    Producto producto1 = Utils.crearNuevoProducto();
-    SharedScanner.getInstancia().closeScanner();
     System.out.println("Agregando producto");
-    catalogo.agregarProducto(producto2);
     catalogo.agregarProducto(producto1);
+    catalogo.agregarProducto(producto2);
+    catalogo.agregarProducto(producto3);
+
+    System.out.println("CATALOGO DE PRODUCTOS===========================");
+    System.out.println("Productos actuales: " + catalogo.numeroActualProductos);
     catalogo.mostrarProductos();
 
+    catalogo.ordenarProductosPorNombre();
+
+    System.out.println("CATALOGO DE PRODUCTOS===========================");
+    System.out.println("Productos actuales: " + catalogo.numeroActualProductos);
+    catalogo.mostrarProductos();
     /*
      * Producto productoSearch = catalogo.buscarProducto("Filtro");
      * 
@@ -33,5 +41,6 @@ public class Main {
      * catalogo.mostrarProductos();
      * 
      */
+
   }
 }
