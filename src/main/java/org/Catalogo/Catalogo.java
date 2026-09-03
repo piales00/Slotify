@@ -1,7 +1,5 @@
 package org.Catalogo;
 
-import java.util.Scanner;
-
 public class Catalogo {
 
   private int totalProductos;
@@ -45,7 +43,6 @@ public class Catalogo {
     }
   }
 
-  // TODO: Implementar eliminar producto
   public void eliminarProducto(String nombreProducto) {
     Producto producto = buscarProducto(nombreProducto);
     System.out.println("Hola estoy aqui");
@@ -69,8 +66,8 @@ public class Catalogo {
 
   }
 
-  // TODO: Implementar actualizar producto
-  public void actualizarProducto(Producto producto) {
+  public void actualizarProducto(Producto producto, Producto nuevoProducto) {
+    productos[producto.posicion] = nuevoProducto;
   }
 
   public void mostrarProductos() {
@@ -92,4 +89,19 @@ public class Catalogo {
     return null;
   }
 
+  // TODO: Implementar ordenammiento por nombre
+  public void ordenarProductosPorNombre() {
+  }
+
+  // TODO Implementar ordenamiento de productos por rotacion
+  public void ordenarProductosPorRotacion() {
+  }
+
+  // TODO Implementar ordenamiento por clasificacion
+  public void ordenarProductosPorClasificacion() {
+  }
+
+  // TODO Implementar ordenamiento por peso
+  public void ordenarProductosPorPeso() {
+  }
 }

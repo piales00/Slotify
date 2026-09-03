@@ -92,7 +92,7 @@ public class Producto {
     return clasificacion;
   }
 
-  public void getClasificacion(String newClasificacion) {
+  public void setClasificacion(String newClasificacion) {
     this.clasificacion = newClasificacion;
   }
 
