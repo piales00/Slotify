@@ -49,7 +49,8 @@ public class Almacen {
     return INSTANCIA != null;
   }
 
-  // Crea (o reemplaza) el almacén con el tamaño indicado y lo deja listo para usar
+  // Crea (o reemplaza) el almacén con el tamaño indicado y lo deja listo para
+  // usar
   public static Almacen crearAlmacen(int filas, int columnas) {
     INSTANCIA = new Almacen(filas, columnas);
     llenarAlmacen();
@@ -150,7 +151,8 @@ public class Almacen {
     return producto;
   }
 
-  // Busca en la matriz la ubicación de un producto por su SKU. Devuelve {fila, columna} o null
+  // Busca en la matriz la ubicación de un producto por su SKU. Devuelve {fila,
+  // columna} o null
   public static int[] buscarUbicacion(String sku) {
     Celda[][] almacen = INSTANCIA.almacen;
     for (int i = 0; i < almacen.length; i++) {
@@ -195,7 +197,8 @@ public class Almacen {
       }
     }
 
-    // 2. Productos ordenados por rotación (sin alterar el orden del catálogo original)
+    // 2. Productos ordenados por rotación (sin alterar el orden del catálogo
+    // original)
     Catalogo copia = catalogo.copiarCatalogo();
     copia.ordenarProductosPorRotacion();
 
