@@ -5,6 +5,8 @@ public class Catalogo {
   private int totalProductos;
   private Producto[] productos;
   public int numeroActualProductos;
+  // La búsqueda binaria solo funciona si el arreglo está ordenado por nombre
+  private boolean ordenadoPorNombre;
 
   public Catalogo(int totalProductos) {
     this.totalProductos = totalProductos;
@@ -25,47 +27,46 @@ public class Catalogo {
     return length;
   }
 
-  public void agregarProducto(Producto producto) {
-    System.out.println("-------AGREGAR PRODUCTOS-------------");
-
-    if (this.numeroActualProductos == totalProductos) {
-      System.out.println("SE HA ALCANZADO EL LIMITE, POR FAVOR EXTENDER EL TAMAÑO");
-      return;
+  public Producto getProducto(int indice) {
+    if (indice < 0 || indice >= numeroActualProductos) {
+      return null;
     }
-
-    if (this.numeroActualProductos == 0) {
-      this.productos[this.numeroActualProductos] = producto;
-      producto.posicion = numeroActualProductos;
-      numeroActualProductos++;
-    } else {
-      this.productos[this.numeroActualProductos++] = producto;
-      producto.posicion = numeroActualProductos - 1;
-    }
+    return productos[indice];
   }
 
-  public void eliminarProducto(String nombreProducto) {
+  public boolean agregarProducto(Producto producto) {
+    if (this.numeroActualProductos == totalProductos) {
+      System.out.println("SE HA ALCANZADO EL LIMITE, POR FAVOR EXTENDER EL TAMAÑO");
+      return false;
+    }
+
+    this.productos[this.numeroActualProductos] = producto;
+    producto.posicion = numeroActualProductos;
+    numeroActualProductos++;
+    ordenadoPorNombre = false;
+    return true;
+  }
+
+  public Producto eliminarProducto(String nombreProducto) {
     Producto producto = buscarProducto(nombreProducto);
     if (producto == null) {
-      return;
+      return null;
     }
-    System.out.println(numeroActualProductos);
-    System.out.println(producto.posicion);
-    for (int i = producto.posicion; i < numeroActualProductos; i++) {
-      if (i == numeroActualProductos) {
-        productos[i] = null;
-        System.out.println("WARNING: EL ALMACENAMIENTO ESTÁ CASI LLENO, CONSIDERAR AUMENTAR TAMAÑO");
-        return;
-      }
 
+    // Desplazar a la izquierda todos los que están después
+    for (int i = producto.posicion; i < numeroActualProductos - 1; i++) {
       productos[i] = productos[i + 1];
     }
-
+    productos[numeroActualProductos - 1] = null;
     numeroActualProductos--;
-
+    actualizarPosiciones();
+    return producto;
   }
 
   public void actualizarProducto(Producto producto, Producto nuevoProducto) {
     productos[producto.posicion] = nuevoProducto;
+    nuevoProducto.posicion = producto.posicion;
+    ordenadoPorNombre = false;
   }
 
   public void mostrarProductos() {
@@ -76,11 +77,34 @@ public class Catalogo {
 
   }
 
+  public void mostrarTabla() {
+    if (numeroActualProductos == 0) {
+      System.out.println(Utils.GRIS + "  (catálogo vacío)" + Utils.RESET);
+      return;
+    }
+
+    String formato = "  %-3s %-9s %-24s %-12s %8s %8s %8s %4s  %-11s%n";
+    String cabecera = String.format(formato, "#", "SKU", "Nombre", "Familia", "Vol(m3)", "Peso(kg)", "Rotación",
+        "ABC", "Picking");
+    System.out.print(Utils.NEGRITA + cabecera + Utils.RESET);
+    System.out.println("  " + "─".repeat(cabecera.length() - 3));
+
+    for (int i = 0; i < numeroActualProductos; i++) {
+      Producto p = productos[i];
+      String clasificacion = Utils.colorClasificacion(p.getClasificacion()) + String.format("%4s", p.getClasificacion())
+          + Utils.RESET;
+      System.out.printf("  %-3d %-9s %-24s %-12s %8.3f %8.1f %8d %s  %-11s%n",
+          i, p.getSKU(), recortar(p.getNombre(), 24), recortar(p.getFamilia(), 12),
+          p.getVolumen(), p.getPeso(), p.getRotacion(), clasificacion, p.getHerramienta());
+    }
+    System.out.println(Utils.GRIS + "  Total: " + numeroActualProductos + "/" + totalProductos + Utils.RESET);
+  }
+
   // Busqueda lineal
   public Producto buscarProducto(String nombre) {
 
     for (int i = 0; i < numeroActualProductos; i++) {
-      if (productos[i].getNombre() == nombre) {
+      if (productos[i].getNombre().equalsIgnoreCase(nombre)) {
         return productos[i];
       }
     }
@@ -88,12 +112,53 @@ public class Catalogo {
     return null;
   }
 
+  // Busqueda lineal por SKU
+  public Producto buscarProductoPorSKU(String sku) {
+    for (int i = 0; i < numeroActualProductos; i++) {
+      if (productos[i].getSKU().equalsIgnoreCase(sku)) {
+        return productos[i];
+      }
+    }
+    return null;
+  }
+
+  /*
+   * Busqueda binaria por nombre: O(log n).
+   * Requiere el arreglo ordenado por nombre, así que si no lo está se ordena primero.
+   * Devuelve el producto (o null) y el número de comparaciones que hicieron falta.
+   */
+  public ResultadoBusqueda buscarProductoBinario(String nombre) {
+    if (!ordenadoPorNombre) {
+      ordenarProductosPorNombre();
+    }
+
+    int inicio = 0;
+    int fin = numeroActualProductos - 1;
+    int comparaciones = 0;
+
+    while (inicio <= fin) {
+      int medio = (inicio + fin) / 2;
+      int comparacion = productos[medio].getNombre().compareToIgnoreCase(nombre);
+      comparaciones++;
+
+      if (comparacion == 0) {
+        return new ResultadoBusqueda(productos[medio], comparaciones);
+      } else if (comparacion < 0) {
+        inicio = medio + 1;
+      } else {
+        fin = medio - 1;
+      }
+    }
+
+    return new ResultadoBusqueda(null, comparaciones);
+  }
+
   public void ordenarProductosPorNombre() {
     // metodo de bubble sort
     for (int i = 0; i < numeroActualProductos - 1; i++) {
       for (int j = 0; j < numeroActualProductos - 1 - i; j++) {
         Producto temp;
-        int comparacion = productos[j].getNombre().compareTo(productos[j + 1].getNombre());
+        int comparacion = productos[j].getNombre().compareToIgnoreCase(productos[j + 1].getNombre());
         if (comparacion > 0) {
           temp = productos[j];
           productos[j] = productos[j + 1];
@@ -102,10 +167,10 @@ public class Catalogo {
 
       }
     }
-
+    actualizarPosiciones();
+    ordenadoPorNombre = true;
   }
 
-  // TODO Implementar ordenamiento de productos por rotacion
   public void ordenarProductosPorRotacion() {
     //Selection sort
     for (int i = 0; i < numeroActualProductos - 1; i++) {
@@ -120,9 +185,10 @@ public class Catalogo {
       productos[i] = productos[indiceMayor];
       productos[indiceMayor] = temp;
     }
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
   }
 
-  // TODO Implementar ordenamiento por clasificacion
   public void ordenarProductosPorClasificacion() {
     //Insertion sort
     for (int i = 1; i < numeroActualProductos; i++) {
@@ -134,9 +200,10 @@ public class Catalogo {
       }
       productos[j + 1] = actual;
     }
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
   }
 
-  // TODO Implementar ordenamiento por peso
   public void ordenarProductosPorPeso() {
     //Shell sort
     for (int gap = numeroActualProductos / 2; gap > 0; gap /= 2) {
@@ -149,9 +216,10 @@ public class Catalogo {
         productos[j] = actual;
       }
     }
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
   }
 
-  // TODO Implementar copia de catalogo
   public Catalogo copiarCatalogo() {
     Catalogo copia = new Catalogo(this.totalProductos);
 
@@ -171,6 +239,20 @@ public class Catalogo {
     }
 
     return copia;
+  }
+
+  // Después de mover productos en el arreglo, cada uno debe conocer su nuevo índice
+  private void actualizarPosiciones() {
+    for (int i = 0; i < numeroActualProductos; i++) {
+      productos[i].posicion = i;
+    }
+  }
+
+  private String recortar(String texto, int maximo) {
+    if (texto == null) {
+      return "-";
+    }
+    return texto.length() <= maximo ? texto : texto.substring(0, maximo - 1) + "…";
   }
 
 }

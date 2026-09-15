@@ -107,7 +107,7 @@ public class Producto {
 
   @Override
   public String toString() {
-    return "Producto: " + this.nombre + " posicion: " + this.posicion;
+    return this.SKU + " - " + this.nombre + " (posicion: " + this.posicion + ")";
   }
 
 }
