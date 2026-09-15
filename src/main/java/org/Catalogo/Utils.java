@@ -13,6 +13,7 @@ public class Utils {
   public static final String AZUL = "[34m";
   public static final String CIAN = "[36m";
   public static final String GRIS = "[90m";
+  public static final String BLOQUE = "\u2588";
 
   public static void main(String[] args) {
     System.out.println("hola esta es una prueba ");

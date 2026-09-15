@@ -17,11 +17,24 @@ public class MainPrueba {
 
   public static void main(String[] args) {
 
-    Scanner sc = SharedScanner.getInstancia();
+    Scanner sc = SharedScanner.getInstancia().getScanner();
+    int numeroFilas = 0;
+    int numeroColumnas = 0;
+    while (numeroFilas < 5 && numeroColumnas < 5) {
+      System.out.println("Dime el numero de filas que vas a querer para tu almacen:");
+      numeroFilas = sc.nextInt();
+      sc.nextLine();
 
-    System.out.println("Escribe tu nombre: ");
-    String nombre = sc.nextLine();
+      System.out.println("Dime el numero de columnas que vas a querer para tu almacen:");
+      numeroColumnas = sc.nextInt();
+      sc.nextLine();
+    }
+    Almacen almacen = Almacen.getInstancia(numeroFilas, numeroColumnas);
 
-    System.out.println(nombre);
+    Almacen.llenarAlmacen();
+
+    Almacen.mostrarAlmacen();
+
+    System.out.println("Espacios disponibles: " + almacen.espaciosDisponibles);
   }
 }
