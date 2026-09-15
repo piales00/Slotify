@@ -36,16 +36,19 @@ public class Almacen {
 
   // TODO terminar llenar almacen
   public static void llenarAlmacen() {
-     
+
     Celda[][] almacen = INSTANCIA.almacen;
     for (int i = 0; i < almacen.length; i++) {
       for (int j = 0; j < almacen[i].length; j++) {
-          
-        if (i == 0 && i == almacen.length-1 && j == 0 && j == almacen[i].length-1) {
+
+        if (i == 0 || i == almacen.length - 1 || j == 0 || j == almacen[i].length - 1) {
           almacen[i][j] = new Celda(EstadoProducto.PARED);
+
+        } else if (Utils.esPar(j) && j > 0) {
+
+          almacen[i][j] = new Celda(EstadoProducto.ESTANTE);
         }
 
-        if (Utils.esPar(dd))
       }
     }
   }
@@ -60,4 +63,5 @@ public class Almacen {
     Celda[][] almacen = INSTANCIA.almacen;
     almacen[fila][columna].setEstado(EstadoProducto.VACIO);
   }
+
 }

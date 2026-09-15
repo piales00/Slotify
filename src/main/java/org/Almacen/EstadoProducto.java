@@ -1,10 +1,10 @@
 package org.Almacen;
 
 public enum EstadoProducto {
-  VACIO, OCUPADO, PARED, PASILLO;
+  VACIO, OCUPADO, PARED, ESTANTE;
 
   public boolean esTransitable() {
-    if (this == VACIO || this == PASILLO) {
+    if (this == VACIO) {
       return true;
     }
     return false;

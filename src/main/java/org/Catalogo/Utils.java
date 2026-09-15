@@ -53,4 +53,12 @@ public class Utils {
     }
     return false;
   }
+
+  public static boolean esImpar(int valor) {
+    if (valor % 2 == 0) {
+      return false;
+    }
+
+    return true;
+  }
 }

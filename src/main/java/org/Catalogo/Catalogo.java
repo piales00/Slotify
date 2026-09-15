@@ -107,7 +107,7 @@ public class Catalogo {
 
   // TODO Implementar ordenamiento de productos por rotacion
   public void ordenarProductosPorRotacion() {
-    //Selection sort
+    // Selection sort
     for (int i = 0; i < numeroActualProductos - 1; i++) {
       int indiceMayor = i;
       Producto temp;
@@ -124,7 +124,7 @@ public class Catalogo {
 
   // TODO Implementar ordenamiento por clasificacion
   public void ordenarProductosPorClasificacion() {
-    //Insertion sort
+    // Insertion sort
     for (int i = 1; i < numeroActualProductos; i++) {
       Producto actual = productos[i];
       int j = i - 1;
@@ -138,7 +138,7 @@ public class Catalogo {
 
   // TODO Implementar ordenamiento por peso
   public void ordenarProductosPorPeso() {
-    //Shell sort
+    // Shell sort
     for (int gap = numeroActualProductos / 2; gap > 0; gap /= 2) {
       for (int i = gap; i < numeroActualProductos; i++) {
         Producto actual = productos[i];
