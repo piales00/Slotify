@@ -1,6 +1,7 @@
 package org.Almacen;
 
 import org.Catalogo.Producto;
+import org.Catalogo.Utils;
 
 public class Almacen {
 
@@ -35,11 +36,16 @@ public class Almacen {
 
   // TODO terminar llenar almacen
   public static void llenarAlmacen() {
-
+     
     Celda[][] almacen = INSTANCIA.almacen;
     for (int i = 0; i < almacen.length; i++) {
       for (int j = 0; j < almacen[i].length; j++) {
+          
+        if (i == 0 && i == almacen.length-1 && j == 0 && j == almacen[i].length-1) {
+          almacen[i][j] = new Celda(EstadoProducto.PARED);
+        }
 
+        if (Utils.esPar(dd))
       }
     }
   }

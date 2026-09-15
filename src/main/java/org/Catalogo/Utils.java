@@ -45,4 +45,12 @@ public class Utils {
 
     return p;
   }
+
+  public static boolean esPar(int valor) {
+
+    if (valor % 2 == 0) {
+      return true;
+    }
+    return false;
+  }
 }
