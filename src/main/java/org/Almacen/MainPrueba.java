@@ -7,5 +7,8 @@ public class MainPrueba {
     System.out.println("SECCION MOSTRAR PRODUCTOS");
     System.out.println("SECCION MOSTRAR ALMACEN 2D");
     System.out.println(colorPared);
+    String RED = "#FF0000";
+
+    System.out.println(RED + "hola mundo");
   }
 }
