@@ -308,6 +308,14 @@ public class Almacen {
     }
   }
 
+  public static int estantesLibres() {
+    return contarEstado(EstadoProducto.VACIO);
+  }
+
+  public static int estantesOcupados() {
+    return contarEstado(EstadoProducto.OCUPADO);
+  }
+
   private static int contarEstado(EstadoProducto estado) {
     int total = 0;
     for (Celda[] fila : INSTANCIA.almacen) {

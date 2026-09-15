@@ -96,6 +96,19 @@ public class Utils {
     }
   }
 
+  public static boolean confirmar(String mensaje) {
+    while (true) {
+      String texto = leerTexto(mensaje + " (s/n): ").toLowerCase();
+      if (texto.equals("s") || texto.equals("si") || texto.equals("sí")) {
+        return true;
+      }
+      if (texto.equals("n") || texto.equals("no")) {
+        return false;
+      }
+      error("Responde s o n.");
+    }
+  }
+
   public static void pausa() {
     System.out.print(GRIS + "\nPresiona ENTER para continuar..." + RESET);
     SharedScanner.getInstancia().getScanner().nextLine();
