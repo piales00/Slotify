@@ -1,15 +1,28 @@
 package org.App;
 
-import org.Catalogo.Producto;
-import org.Catalogo.SharedScanner;
-import org.Catalogo.Catalogo;
-import org.Catalogo.Utils;
 import java.util.Scanner;
+
+import org.Catalogo.Catalogo;
+import org.Catalogo.Producto;
 
 public class Main {
   public static final Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
+    System.out.println("""
+
+         ██████╗ ██╗      ██████╗ ████████╗██╗███████╗██╗   ██╗
+         ██╔════╝ ██║     ██╔═══██╗╚══██╔══╝██║██╔════╝╚██╗ ██╔╝
+         ╚█████╗  ██║     ██║   ██║   ██║   ██║█████╗   ╚████╔╝ 
+          ╚═══██╗ ██║     ██║   ██║   ██║   ██║██╔══╝    ╚██╔╝  
+         ██████╔╝ ███████╗╚██████╔╝   ██║   ██║██║        ██║   
+         ╚═════╝  ╚══════╝ ╚═════╝    ╚═╝   ╚═╝╚═╝        ╚═╝   
+
+                    Sistema de gestión de almacenes
+            =========================================
+
+        """);
+
     System.out.println("MAIN TESTING");
     System.out.println("CREANDO PRODUCTOS");
     Catalogo catalogo = new Catalogo(10);

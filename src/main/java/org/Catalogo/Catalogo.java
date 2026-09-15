@@ -153,24 +153,24 @@ public class Catalogo {
 
   // TODO Implementar copia de catalogo
   public Catalogo copiarCatalogo() {
-    Catalogo copia = new Catalogo(this.totalProductos);
+  Catalogo copia = new Catalogo(this.totalProductos);
 
-    for (int i = 0; i < this.numeroActualProductos; i++) {
-      Producto original = this.productos[i];
-      Producto nuevoProducto = new Producto(
-          original.getNombre(),
-          original.getSKU(),
-          original.getFamilia(),
-          original.getVolumen(),
-          original.getPeso(),
-          original.getRotacion(),
-          original.getClasificacion(),
-          original.getHerramienta());
+  for (int i = 0; i < this.numeroActualProductos; i++) {
+    Producto original = this.productos[i];
+    Producto productoCopia = new Producto(
+        original.getNombre(),
+        original.getSKU(),
+        original.getFamilia(),
+        original.getVolumen(),
+        original.getPeso(),
+        original.getRotacion(),
+        original.getClasificacion(),
+        original.getHerramienta());
 
-      copia.agregarProducto(nuevoProducto);
-    }
-
-    return copia;
+    copia.agregarProducto(productoCopia);
   }
+
+  return copia;
+}
 
 }
