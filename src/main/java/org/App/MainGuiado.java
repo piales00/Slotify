@@ -7,10 +7,6 @@ import org.Catalogo.ResultadoBusqueda;
 import org.Catalogo.SharedScanner;
 import org.Catalogo.Utils;
 
-/*
- * Versión sin menú: recorre todas las funciones del sistema paso a paso,
- * pidiendo datos al usuario en cada etapa.
- */
 public class MainGuiado {
 
   private static final int TOTAL_PASOS = 11;
@@ -38,7 +34,6 @@ public class MainGuiado {
     SharedScanner.getInstancia().closeScanner();
   }
 
-  // PASO 1
   private static void pasoCrearAlmacen() {
     encabezado(1, "CREAR TU ALMACÉN");
     System.out.println("Primero vamos a definir el tamaño de tu almacén.");
@@ -57,7 +52,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 2
   private static void pasoCargarCatalogo() {
     encabezado(2, "CATÁLOGO DE EJEMPLO");
     System.out.println("El sistema carga un catálogo de productos de ejemplo:");
@@ -67,7 +61,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 3
   private static void pasoLlenarAlmacen() {
     encabezado(3, "LLENAR EL ALMACÉN");
     Utils.info("Los productos con más rotación se colocan más cerca de la entrada (▲).");
@@ -78,7 +71,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 4
   private static void pasoProductosPorPasillo() {
     encabezado(4, "PRODUCTOS POR PASILLO");
     System.out.println("Así quedaron repartidos los productos en cada pasillo:");
@@ -87,7 +79,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 5
   private static void pasoAgregarProducto() {
     encabezado(5, "AGREGAR Y COLOCAR TU PRODUCTO");
     if (!Utils.confirmar("¿Quieres registrar un producto propio?")) {
@@ -130,7 +121,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 6
   private static void pasoOrdenarCatalogo() {
     encabezado(6, "ORDENAR EL CATÁLOGO");
     System.out.println("¿Por qué criterio quieres ordenar el catálogo?");
@@ -152,7 +142,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 7
   private static void pasoBusquedaBinaria() {
     encabezado(7, "BÚSQUEDA BINARIA POR NOMBRE");
     Utils.info("La búsqueda binaria necesita el catálogo ordenado por nombre; si no lo está, se ordena primero.");
@@ -172,7 +161,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 8
   private static void pasoBuscarUbicacion() {
     encabezado(8, "BUSCAR UBICACIÓN EN EL ALMACÉN");
     System.out.println("Busca en qué pasillo está un producto usando su SKU (ej: SKU-003).");
@@ -189,7 +177,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 9
   private static void pasoRetirarProducto() {
     encabezado(9, "RETIRAR UN PRODUCTO DE SU UBICACIÓN");
     if (Almacen.estantesOcupados() == 0) {
@@ -215,7 +202,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 10
   private static void pasoEliminarProducto() {
     encabezado(10, "ELIMINAR UN PRODUCTO DEL CATÁLOGO");
     System.out.println("Productos actuales:");
@@ -240,7 +226,6 @@ public class MainGuiado {
     Utils.pausa();
   }
 
-  // PASO 11
   private static void pasoResumenFinal() {
     encabezado(11, "ESTADO FINAL");
     System.out.println("Así terminan tu catálogo y tu almacén:");

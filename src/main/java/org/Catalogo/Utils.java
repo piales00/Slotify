@@ -4,7 +4,6 @@ import java.util.Scanner;
 
 public class Utils {
 
-  // Colores ANSI para la consola
   public static final String RESET = "[0m";
   public static final String NEGRITA = "[1m";
   public static final String TENUE = "[2m";
@@ -42,7 +41,6 @@ public class Utils {
     return false;
   }
 
-  // ---------------- Lectura de datos validada ----------------
 
   public static String leerTexto(String mensaje) {
     Scanner sc = SharedScanner.getInstancia().getScanner();
@@ -114,7 +112,6 @@ public class Utils {
     SharedScanner.getInstancia().getScanner().nextLine();
   }
 
-  // ---------------- Mensajes con formato ----------------
 
   public static void titulo(String texto) {
     String linea = "═".repeat(texto.length() + 4);

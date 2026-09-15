@@ -16,7 +16,6 @@ public class Almacen {
   private int columnas;
   private Celda[][] almacen;
   private int pasillos;
-  // La entrada está en la pared de abajo, en la primera columna interior
   private int entradaFila;
   private int entradaColumna;
 
@@ -49,27 +48,12 @@ public class Almacen {
     return INSTANCIA != null;
   }
 
-  // Crea (o reemplaza) el almacén con el tamaño indicado y lo deja listo para
-  // usar
   public static Almacen crearAlmacen(int filas, int columnas) {
     INSTANCIA = new Almacen(filas, columnas);
     llenarAlmacen();
     return INSTANCIA;
   }
 
-  /*
-   * Distribución del almacén (ejemplo 7x11, E = estante):
-   *
-   * ███████████ <- pared
-   * █·········█ <- pasillo transversal
-   * █·EE·EE·E·█ <- cada estante tiene un pasillo al lado
-   * █·EE·EE·E·█
-   * █·EE·EE·E·█
-   * █·········█ <- pasillo transversal
-   * █▲█████████ <- entrada
-   *
-   * Columnas interiores con patrón: pasillo, estante, estante, pasillo, ...
-   */
   public static void llenarAlmacen() {
 
     Celda[][] almacen = INSTANCIA.almacen;
@@ -80,19 +64,19 @@ public class Almacen {
     for (int i = 0; i < filas; i++) {
       for (int j = 0; j < columnas; j++) {
 
-        // Bordes -> pared
+        // para el borde y la pared, revisen todo el codigo y luego lo terminan pls
         if (i == 0 || i == filas - 1 || j == 0 || j == columnas - 1) {
           almacen[i][j] = new Celda(EstadoProducto.PARED);
           continue;
         }
 
-        // Primera y última fila interior -> pasillos transversales que conectan todo
+        // Primera y última fila interior
         if (i == 1 || i == filas - 2) {
           almacen[i][j] = new Celda(EstadoProducto.PASILLO);
           continue;
         }
 
-        int k = j - 1; // posición dentro del interior
+        int k = j - 1; // posición dentro de
         int numeroPasillo = k / 3 + 1;
         boolean ultimaColumna = j == columnas - 2;
 
@@ -100,14 +84,11 @@ public class Almacen {
           almacen[i][j] = new Celda(EstadoProducto.PASILLO, numeroPasillo);
           INSTANCIA.pasillos = Math.max(INSTANCIA.pasillos, numeroPasillo);
         } else if (k % 3 == 2 && ultimaColumna) {
-          // Un estante pegado a la pared no tendría acceso, se convierte en pasillo
           almacen[i][j] = new Celda(EstadoProducto.PASILLO, numeroPasillo + 1);
           INSTANCIA.pasillos = Math.max(INSTANCIA.pasillos, numeroPasillo + 1);
         } else if (k % 3 == 1) {
-          // Estante que da al pasillo de su izquierda
           almacen[i][j] = new Celda(EstadoProducto.VACIO, numeroPasillo);
         } else {
-          // Estante que da al pasillo de su derecha
           almacen[i][j] = new Celda(EstadoProducto.VACIO, numeroPasillo + 1);
         }
       }
@@ -151,8 +132,6 @@ public class Almacen {
     return producto;
   }
 
-  // Busca en la matriz la ubicación de un producto por su SKU. Devuelve {fila,
-  // columna} o null
   public static int[] buscarUbicacion(String sku) {
     Celda[][] almacen = INSTANCIA.almacen;
     for (int i = 0; i < almacen.length; i++) {
@@ -171,15 +150,9 @@ public class Almacen {
     return "Pasillo " + celda.getPasillo() + " · fila " + fila + " · columna " + columna;
   }
 
-  /*
-   * Coloca automáticamente los productos del catálogo que aún no están en el
-   * almacén. Los de mayor rotación van a las estanterías más cercanas a la
-   * entrada para reducir los recorridos de picking.
-   */
   public static int ubicarProductos(Catalogo catalogo) {
     Celda[][] almacen = INSTANCIA.almacen;
 
-    // 1. Estanterías libres ordenadas por distancia a la entrada (insertion sort)
     int[][] libres = new int[INSTANCIA.filas * INSTANCIA.columnas][];
     int totalLibres = 0;
     for (int i = 0; i < almacen.length; i++) {
@@ -197,8 +170,6 @@ public class Almacen {
       }
     }
 
-    // 2. Productos ordenados por rotación (sin alterar el orden del catálogo
-    // original)
     Catalogo copia = catalogo.copiarCatalogo();
     copia.ordenarProductosPorRotacion();
 
@@ -207,7 +178,7 @@ public class Almacen {
     for (int p = 0; p < copia.numeroActualProductos; p++) {
       Producto producto = copia.getProducto(p);
       if (buscarUbicacion(producto.getSKU()) != null) {
-        continue; // ya está colocado
+        continue;
       }
       if (siguienteLibre == totalLibres) {
         Utils.error("No hay más espacio: " + (copia.numeroActualProductos - p) + " producto(s) sin ubicar.");
@@ -224,14 +195,12 @@ public class Almacen {
     Celda[][] almacen = INSTANCIA.almacen;
     StringBuilder sb = new StringBuilder();
 
-    // Cabecera: número de columna
     sb.append("    ");
     for (int j = 0; j < INSTANCIA.columnas; j++) {
       sb.append(Utils.GRIS).append(String.format("%-3d", j)).append(Utils.RESET);
     }
     sb.append('\n');
 
-    // Cabecera: número de pasillo encima de cada pasillo vertical
     sb.append("    ");
     for (int j = 0; j < INSTANCIA.columnas; j++) {
       Celda celda = almacen[2][j];
@@ -269,7 +238,6 @@ public class Almacen {
         + "  |  Ocupación: " + ocupadas + "/" + capacidad + " (" + porcentaje + "%)");
   }
 
-  // Lista los productos agrupados por pasillo
   public static void mostrarProductosPorPasillo() {
     Celda[][] almacen = INSTANCIA.almacen;
     for (int pasillo = 1; pasillo <= INSTANCIA.pasillos; pasillo++) {

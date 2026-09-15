@@ -67,7 +67,6 @@ public class Main {
     System.out.println("   0) Salir");
   }
 
-  // ---------------- Datos iniciales ----------------
 
   private static void cargarDatosIniciales() {
     DatosIniciales.cargarProductos(catalogo);
@@ -76,7 +75,6 @@ public class Main {
     Almacen.ubicarProductos(catalogo);
   }
 
-  // ---------------- Almacén ----------------
 
   private static void crearAlmacen() {
     Utils.titulo("CREAR ALMACÉN");
@@ -174,7 +172,6 @@ public class Main {
     Almacen.mostrarProductosPorPasillo();
   }
 
-  // ---------------- Catálogo ----------------
 
   private static void verCatalogo() {
     Utils.titulo("CATÁLOGO DE PRODUCTOS");
@@ -204,7 +201,6 @@ public class Main {
       return;
     }
 
-    // Si estaba en el almacén, también se retira de su estantería
     if (Almacen.existe()) {
       int[] ubicacion = Almacen.buscarUbicacion(eliminado.getSKU());
       if (ubicacion != null) {
@@ -255,7 +251,6 @@ public class Main {
     }
   }
 
-  // ---------------- Auxiliares ----------------
 
   private static boolean hayAlmacen() {
     if (!Almacen.existe()) {

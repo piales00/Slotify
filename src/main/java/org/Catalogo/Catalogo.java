@@ -5,7 +5,6 @@ public class Catalogo {
   private int totalProductos;
   private Producto[] productos;
   public int numeroActualProductos;
-  // La búsqueda binaria solo funciona si el arreglo está ordenado por nombre
   private boolean ordenadoPorNombre;
 
   public Catalogo(int totalProductos) {
@@ -53,7 +52,6 @@ public class Catalogo {
       return null;
     }
 
-    // Desplazar a la izquierda todos los que están después
     for (int i = producto.posicion; i < numeroActualProductos - 1; i++) {
       productos[i] = productos[i + 1];
     }
@@ -112,7 +110,6 @@ public class Catalogo {
     return null;
   }
 
-  // Busqueda lineal por SKU
   public Producto buscarProductoPorSKU(String sku) {
     for (int i = 0; i < numeroActualProductos; i++) {
       if (productos[i].getSKU().equalsIgnoreCase(sku)) {
@@ -122,11 +119,6 @@ public class Catalogo {
     return null;
   }
 
-  /*
-   * Busqueda binaria por nombre: O(log n).
-   * Requiere el arreglo ordenado por nombre, así que si no lo está se ordena primero.
-   * Devuelve el producto (o null) y el número de comparaciones que hicieron falta.
-   */
   public ResultadoBusqueda buscarProductoBinario(String nombre) {
     if (!ordenadoPorNombre) {
       ordenarProductosPorNombre();
@@ -241,7 +233,6 @@ public class Catalogo {
     return copia;
   }
 
-  // Después de mover productos en el arreglo, cada uno debe conocer su nuevo índice
   private void actualizarPosiciones() {
     for (int i = 0; i < numeroActualProductos; i++) {
       productos[i].posicion = i;

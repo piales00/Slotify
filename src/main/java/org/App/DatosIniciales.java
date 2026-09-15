@@ -3,7 +3,6 @@ package org.App;
 import org.Catalogo.Catalogo;
 import org.Catalogo.Producto;
 
-// Productos de ejemplo compartidos por Main y MainGuiado
 public class DatosIniciales {
 
   public static void cargarProductos(Catalogo catalogo) {

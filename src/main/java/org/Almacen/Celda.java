@@ -5,7 +5,6 @@ import org.Catalogo.Producto;
 public class Celda {
   private Producto producto;
   private EstadoProducto estado;
-  // Número del pasillo al que pertenece (o al que da acceso si es estantería). 0 = ninguno
   private int pasillo;
 
   public Celda(EstadoProducto estado) {

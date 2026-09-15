@@ -1,6 +1,5 @@
 package org.Catalogo;
 
-// Resultado de una búsqueda: el producto encontrado (o null) y los pasos que se necesitaron
 public class ResultadoBusqueda {
   private Producto producto;
   private int comparaciones;
