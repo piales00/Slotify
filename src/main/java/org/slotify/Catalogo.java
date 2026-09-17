@@ -1,4 +1,4 @@
-package org.Catalogo;
+package org.slotify;
 
 public class Catalogo {
 
@@ -77,25 +77,24 @@ public class Catalogo {
 
   public void mostrarTabla() {
     if (numeroActualProductos == 0) {
-      System.out.println(Utils.GRIS + "  (catálogo vacío)" + Utils.RESET);
+      System.out.println("  (catálogo vacío)");
       return;
     }
 
     String formato = "  %-3s %-9s %-24s %-12s %8s %8s %8s %4s  %-11s%n";
     String cabecera = String.format(formato, "#", "SKU", "Nombre", "Familia", "Vol(m3)", "Peso(kg)", "Rotación",
         "ABC", "Picking");
-    System.out.print(Utils.NEGRITA + cabecera + Utils.RESET);
+    System.out.print(cabecera);
     System.out.println("  " + "─".repeat(cabecera.length() - 3));
 
     for (int i = 0; i < numeroActualProductos; i++) {
       Producto p = productos[i];
-      String clasificacion = Utils.colorClasificacion(p.getClasificacion()) + String.format("%4s", p.getClasificacion())
-          + Utils.RESET;
+      String clasificacion = String.format("%4s", p.getClasificacion());
       System.out.printf("  %-3d %-9s %-24s %-12s %8.3f %8.1f %8d %s  %-11s%n",
           i, p.getSKU(), recortar(p.getNombre(), 24), recortar(p.getFamilia(), 12),
           p.getVolumen(), p.getPeso(), p.getRotacion(), clasificacion, p.getHerramienta());
     }
-    System.out.println(Utils.GRIS + "  Total: " + numeroActualProductos + "/" + totalProductos + Utils.RESET);
+    System.out.println("  Total: " + numeroActualProductos + "/" + totalProductos);
   }
 
   // Busqueda lineal
@@ -117,6 +116,17 @@ public class Catalogo {
       }
     }
     return null;
+  }
+
+  public ResultadoBusqueda buscarProductoLineal(String nombre) {
+    int comparaciones = 0;
+    for (int i = 0; i < numeroActualProductos; i++) {
+      comparaciones++;
+      if (productos[i].getNombre().equalsIgnoreCase(nombre)) {
+        return new ResultadoBusqueda(productos[i], comparaciones);
+      }
+    }
+    return new ResultadoBusqueda(null, comparaciones);
   }
 
   public ResultadoBusqueda buscarProductoBinario(String nombre) {
@@ -164,7 +174,7 @@ public class Catalogo {
   }
 
   public void ordenarProductosPorRotacion() {
-    //Selection sort
+    // Selection sort
     for (int i = 0; i < numeroActualProductos - 1; i++) {
       int indiceMayor = i;
       Producto temp;
@@ -182,7 +192,7 @@ public class Catalogo {
   }
 
   public void ordenarProductosPorClasificacion() {
-    //Insertion sort
+    // Insertion sort
     for (int i = 1; i < numeroActualProductos; i++) {
       Producto actual = productos[i];
       int j = i - 1;
@@ -197,7 +207,7 @@ public class Catalogo {
   }
 
   public void ordenarProductosPorPeso() {
-    //Shell sort
+    // Shell sort
     for (int gap = numeroActualProductos / 2; gap > 0; gap /= 2) {
       for (int i = gap; i < numeroActualProductos; i++) {
         Producto actual = productos[i];
@@ -210,6 +220,114 @@ public class Catalogo {
     }
     actualizarPosiciones();
     ordenadoPorNombre = false;
+  }
+
+  public void ordenarProductosPorSKU() {
+    if (numeroActualProductos > 1) {
+      Producto[] auxiliar = new Producto[numeroActualProductos];
+      mergeSort(auxiliar, 0, numeroActualProductos - 1);
+    }
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
+  }
+
+  private void mergeSort(Producto[] auxiliar, int inicio, int fin) {
+    if (inicio >= fin) {
+      return;
+    }
+    int medio = (inicio + fin) / 2;
+    mergeSort(auxiliar, inicio, medio);
+    mergeSort(auxiliar, medio + 1, fin);
+    mezclar(auxiliar, inicio, medio, fin);
+  }
+
+  private void mezclar(Producto[] auxiliar, int inicio, int medio, int fin) {
+    for (int k = inicio; k <= fin; k++) {
+      auxiliar[k] = productos[k];
+    }
+    int i = inicio;
+    int j = medio + 1;
+    int k = inicio;
+    while (i <= medio && j <= fin) {
+      if (auxiliar[i].getSKU().compareToIgnoreCase(auxiliar[j].getSKU()) <= 0) {
+        productos[k++] = auxiliar[i++];
+      } else {
+        productos[k++] = auxiliar[j++];
+      }
+    }
+    while (i <= medio) {
+      productos[k++] = auxiliar[i++];
+    }
+    while (j <= fin) {
+      productos[k++] = auxiliar[j++];
+    }
+  }
+
+  public void ordenarProductosPorVolumen() {
+    quickSort(0, numeroActualProductos - 1);
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
+  }
+
+  private void quickSort(int inicio, int fin) {
+    if (inicio >= fin) {
+      return;
+    }
+    int indicePivote = particionar(inicio, fin);
+    quickSort(inicio, indicePivote - 1);
+    quickSort(indicePivote + 1, fin);
+  }
+
+  private int particionar(int inicio, int fin) {
+    double pivote = productos[fin].getVolumen();
+    int i = inicio - 1;
+    for (int j = inicio; j < fin; j++) {
+      if (productos[j].getVolumen() <= pivote) {
+        i++;
+        intercambiar(i, j);
+      }
+    }
+    intercambiar(i + 1, fin);
+    return i + 1;
+  }
+
+  public void ordenarProductosPorFamilia() {
+    int n = numeroActualProductos;
+    for (int i = n / 2 - 1; i >= 0; i--) {
+      hundir(n, i);
+    }
+    for (int fin = n - 1; fin > 0; fin--) {
+      intercambiar(0, fin);
+      hundir(fin, 0);
+    }
+    actualizarPosiciones();
+    ordenadoPorNombre = false;
+  }
+
+  private void hundir(int tamano, int raiz) {
+    int mayor = raiz;
+    int izquierdo = 2 * raiz + 1;
+    int derecho = 2 * raiz + 2;
+    if (izquierdo < tamano && compararFamilia(productos[izquierdo], productos[mayor]) > 0) {
+      mayor = izquierdo;
+    }
+    if (derecho < tamano && compararFamilia(productos[derecho], productos[mayor]) > 0) {
+      mayor = derecho;
+    }
+    if (mayor != raiz) {
+      intercambiar(raiz, mayor);
+      hundir(tamano, mayor);
+    }
+  }
+
+  private int compararFamilia(Producto a, Producto b) {
+    return a.getFamilia().compareToIgnoreCase(b.getFamilia());
+  }
+
+  private void intercambiar(int i, int j) {
+    Producto temp = productos[i];
+    productos[i] = productos[j];
+    productos[j] = temp;
   }
 
   public Catalogo copiarCatalogo() {

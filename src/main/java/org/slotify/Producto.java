@@ -1,4 +1,4 @@
-package org.Catalogo;
+package org.slotify;
 
 // SKU, familia/grupo de producto, volumen, peso, demanda/rotación, clasificación ABC, herramienta de picking requerida (manual, montacargas, grúa).
 public class Producto {

@@ -1,8 +1,4 @@
-package org.Almacen;
-
-import org.Catalogo.Catalogo;
-import org.Catalogo.Producto;
-import org.Catalogo.Utils;
+package org.slotify;
 
 public class Almacen {
 
@@ -197,7 +193,7 @@ public class Almacen {
 
     sb.append("    ");
     for (int j = 0; j < INSTANCIA.columnas; j++) {
-      sb.append(Utils.GRIS).append(String.format("%-3d", j)).append(Utils.RESET);
+      sb.append(String.format("%-3d", j));
     }
     sb.append('\n');
 
@@ -205,8 +201,7 @@ public class Almacen {
     for (int j = 0; j < INSTANCIA.columnas; j++) {
       Celda celda = almacen[2][j];
       if (celda.getEstado() == EstadoProducto.PASILLO && celda.getPasillo() > 0) {
-        sb.append(Utils.CIAN).append(Utils.NEGRITA)
-            .append(String.format("%-3s", "P" + celda.getPasillo())).append(Utils.RESET);
+        sb.append(String.format("%-3s", "P" + celda.getPasillo()));
       } else {
         sb.append("   ");
       }
@@ -214,7 +209,7 @@ public class Almacen {
     sb.append('\n');
 
     for (int i = 0; i < INSTANCIA.filas; i++) {
-      sb.append(Utils.GRIS).append(String.format("%2d  ", i)).append(Utils.RESET);
+      sb.append(String.format("%2d  ", i));
       for (int j = 0; j < INSTANCIA.columnas; j++) {
         sb.append(dibujarCelda(i, j));
       }
@@ -223,12 +218,7 @@ public class Almacen {
 
     System.out.print(sb);
     System.out.println();
-    System.out.println("  " + Utils.GRIS + "███" + Utils.RESET + " Pared   "
-        + Utils.GRIS + " · " + Utils.RESET + " Pasillo   "
-        + Utils.VERDE + Utils.NEGRITA + " ▲ " + Utils.RESET + " Entrada   "
-        + Utils.TENUE + "[ ]" + Utils.RESET + " Libre   "
-        + Utils.VERDE + "[A]" + Utils.RESET + Utils.AMARILLO + "[B]" + Utils.RESET
-        + Utils.ROJO + "[C]" + Utils.RESET + " Ocupado (ABC)");
+    System.out.println("  ███ Pared    ·  Pasillo    ▲  Entrada   [ ] Libre   [A][B][C] Ocupado (ABC)");
 
     int capacidad = contarEstado(EstadoProducto.VACIO) + contarEstado(EstadoProducto.OCUPADO);
     int ocupadas = contarEstado(EstadoProducto.OCUPADO);
@@ -241,41 +231,40 @@ public class Almacen {
   public static void mostrarProductosPorPasillo() {
     Celda[][] almacen = INSTANCIA.almacen;
     for (int pasillo = 1; pasillo <= INSTANCIA.pasillos; pasillo++) {
-      System.out.println(Utils.CIAN + Utils.NEGRITA + "Pasillo " + pasillo + Utils.RESET);
+      System.out.println("Pasillo " + pasillo);
       boolean vacio = true;
       for (int i = 0; i < almacen.length; i++) {
         for (int j = 0; j < almacen[i].length; j++) {
           Celda celda = almacen[i][j];
           if (celda.getEstado() == EstadoProducto.OCUPADO && celda.getPasillo() == pasillo) {
             Producto p = celda.getProducto();
-            System.out.printf("   (%2d,%2d)  %s%-10s%s %s%n", i, j,
-                Utils.colorClasificacion(p.getClasificacion()), p.getSKU(), Utils.RESET, p.getNombre());
+            System.out.printf("   (%2d,%2d)  %-10s %s%n", i, j, p.getSKU(), p.getNombre());
             vacio = false;
           }
         }
       }
       if (vacio) {
-        System.out.println(Utils.GRIS + "   (sin productos)" + Utils.RESET);
+        System.out.println("   (sin productos)");
       }
     }
   }
 
   private static String dibujarCelda(int fila, int columna) {
     if (fila == INSTANCIA.entradaFila && columna == INSTANCIA.entradaColumna) {
-      return Utils.VERDE + Utils.NEGRITA + " ▲ " + Utils.RESET;
+      return " ▲ ";
     }
 
     Celda celda = INSTANCIA.almacen[fila][columna];
     switch (celda.getEstado()) {
       case PARED:
-        return Utils.GRIS + "███" + Utils.RESET;
+        return "███";
       case PASILLO:
-        return Utils.GRIS + " · " + Utils.RESET;
+        return " · ";
       case VACIO:
-        return Utils.TENUE + "[ ]" + Utils.RESET;
+        return "[ ]";
       default:
         String clasificacion = celda.getProducto().getClasificacion();
-        return Utils.colorClasificacion(clasificacion) + Utils.NEGRITA + "[" + clasificacion + "]" + Utils.RESET;
+        return "[" + clasificacion + "]";
     }
   }
 

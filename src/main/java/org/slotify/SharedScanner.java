@@ -1,4 +1,4 @@
-package org.Catalogo;
+package org.slotify;
 
 import java.util.Scanner;
 

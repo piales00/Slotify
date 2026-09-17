@@ -1,6 +1,4 @@
-package org.Almacen;
-
-import org.Catalogo.Producto;
+package org.slotify;
 
 public class Celda {
   private Producto producto;

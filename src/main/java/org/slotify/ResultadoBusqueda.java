@@ -1,4 +1,4 @@
-package org.Catalogo;
+package org.slotify;
 
 public class ResultadoBusqueda {
   private Producto producto;

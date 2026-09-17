@@ -1,4 +1,4 @@
-package org.Almacen;
+package org.slotify;
 
 public enum EstadoProducto {
   VACIO, OCUPADO, PARED, PASILLO;

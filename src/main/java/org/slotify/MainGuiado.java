@@ -1,21 +1,14 @@
-package org.App;
-
-import org.Almacen.Almacen;
-import org.Catalogo.Catalogo;
-import org.Catalogo.Producto;
-import org.Catalogo.ResultadoBusqueda;
-import org.Catalogo.SharedScanner;
-import org.Catalogo.Utils;
+package org.slotify;
 
 public class MainGuiado {
 
-  private static final int TOTAL_PASOS = 11;
+  private static final int TOTAL_PASOS = 12;
   private static final Catalogo catalogo = new Catalogo(50);
 
   public static void main(String[] args) {
     Utils.titulo("SLOTIFY · Recorrido guiado");
     System.out.println("Te acompañaremos paso a paso: crearás tu almacén, lo llenaremos de productos");
-    System.out.println("y probarás las búsquedas, el ordenamiento y la eliminación.");
+    System.out.println("y probarás la actualización, las búsquedas, el ordenamiento y la eliminación.");
     Utils.pausa();
 
     pasoCrearAlmacen();
@@ -23,8 +16,9 @@ public class MainGuiado {
     pasoLlenarAlmacen();
     pasoProductosPorPasillo();
     pasoAgregarProducto();
+    pasoActualizarProducto();
     pasoOrdenarCatalogo();
-    pasoBusquedaBinaria();
+    pasoBuscarProducto();
     pasoBuscarUbicacion();
     pasoRetirarProducto();
     pasoEliminarProducto();
@@ -118,37 +112,107 @@ public class MainGuiado {
         Utils.info("Inténtalo de nuevo.");
       }
     }
+    System.out.println();
+    System.out.println("Así queda el almacén con tu producto:");
+    Almacen.mostrarAlmacen();
     Utils.pausa();
   }
 
-  private static void pasoOrdenarCatalogo() {
-    encabezado(6, "ORDENAR EL CATÁLOGO");
-    System.out.println("¿Por qué criterio quieres ordenar el catálogo?");
-    System.out.println("  1) Por nombre         (Bubble sort)");
-    System.out.println("  2) Por rotación       (Selection sort)");
-    System.out.println("  3) Por clasificación  (Insertion sort)");
-    System.out.println("  4) Por peso           (Shell sort)");
-    int criterio = Utils.leerEntero("Criterio: ", 1, 4);
-
-    switch (criterio) {
-      case 1 -> catalogo.ordenarProductosPorNombre();
-      case 2 -> catalogo.ordenarProductosPorRotacion();
-      case 3 -> catalogo.ordenarProductosPorClasificacion();
-      case 4 -> catalogo.ordenarProductosPorPeso();
+  private static void pasoActualizarProducto() {
+    encabezado(6, "ACTUALIZAR UN PRODUCTO");
+    if (!Utils.confirmar("¿Quieres actualizar los datos de un producto?")) {
+      Utils.info("Paso omitido.");
+      Utils.pausa();
+      return;
     }
-    Utils.exito("Catálogo ordenado:");
+
+    System.out.println("Catálogo antes de actualizar:");
+    catalogo.mostrarTabla();
     System.out.println();
+
+    Producto original = null;
+    while (original == null) {
+      String sku = Utils.leerTexto("SKU del producto a actualizar (ej: SKU-001): ");
+      original = catalogo.buscarProductoPorSKU(sku);
+      if (original == null) {
+        Utils.error("No existe ningún producto con el SKU " + sku.toUpperCase() + ". Inténtalo de nuevo.");
+      }
+    }
+
+    System.out.println("Introduce los nuevos datos de " + original.getNombre() + ":");
+    Producto nuevo = Utils.crearNuevoProducto();
+    Producto existente = catalogo.buscarProductoPorSKU(nuevo.getSKU());
+    while (existente != null && existente != original) {
+      Utils.error("Ya existe otro producto con el SKU " + nuevo.getSKU() + ".");
+      nuevo.setSKU(Utils.leerTexto("Introduce otro SKU: ").toUpperCase());
+      existente = catalogo.buscarProductoPorSKU(nuevo.getSKU());
+    }
+
+    int[] ubicacion = Almacen.buscarUbicacion(original.getSKU());
+    catalogo.actualizarProducto(original, nuevo);
+    if (ubicacion != null) {
+      Almacen.eliminarProducto(ubicacion[0], ubicacion[1]);
+      Almacen.agregarProducto(nuevo, ubicacion[0], ubicacion[1]);
+      Utils.info("También se actualizó en " + Almacen.describirUbicacion(ubicacion[0], ubicacion[1]) + ".");
+    }
+    Utils.exito("Producto actualizado.");
+
+    System.out.println();
+    System.out.println("Catálogo después de actualizar:");
     catalogo.mostrarTabla();
     Utils.pausa();
   }
 
-  private static void pasoBusquedaBinaria() {
-    encabezado(7, "BÚSQUEDA BINARIA POR NOMBRE");
-    Utils.info("La búsqueda binaria necesita el catálogo ordenado por nombre; si no lo está, se ordena primero.");
+  private static void pasoOrdenarCatalogo() {
+    encabezado(7, "ORDENAR EL CATÁLOGO");
 
     do {
+      System.out.println("Catálogo antes de ordenar:");
+      catalogo.mostrarTabla();
+      System.out.println();
+      System.out.println("¿Por qué criterio quieres ordenar el catálogo?");
+      System.out.println("  1) Por nombre         (Bubble sort)");
+      System.out.println("  2) Por rotación       (Selection sort)");
+      System.out.println("  3) Por clasificación  (Insertion sort)");
+      System.out.println("  4) Por peso           (Shell sort)");
+      System.out.println("  5) Por SKU            (Merge sort)");
+      System.out.println("  6) Por volumen        (Quick sort)");
+      System.out.println("  7) Por familia        (Heap sort)");
+      int criterio = Utils.leerEntero("Criterio: ", 1, 7);
+
+      switch (criterio) {
+        case 1 -> catalogo.ordenarProductosPorNombre();
+        case 2 -> catalogo.ordenarProductosPorRotacion();
+        case 3 -> catalogo.ordenarProductosPorClasificacion();
+        case 4 -> catalogo.ordenarProductosPorPeso();
+        case 5 -> catalogo.ordenarProductosPorSKU();
+        case 6 -> catalogo.ordenarProductosPorVolumen();
+        case 7 -> catalogo.ordenarProductosPorFamilia();
+      }
+      System.out.println();
+      Utils.exito("Catálogo después de ordenar:");
+      catalogo.mostrarTabla();
+      System.out.println();
+    } while (Utils.confirmar("¿Quieres probar otro ordenamiento?"));
+    Utils.pausa();
+  }
+
+  private static void pasoBuscarProducto() {
+    encabezado(8, "BUSCAR UN PRODUCTO POR NOMBRE");
+
+    do {
+      System.out.println("¿Qué tipo de búsqueda quieres usar?");
+      System.out.println("  1) Búsqueda lineal   (revisa los productos uno por uno)");
+      System.out.println("  2) Búsqueda binaria  (necesita el catálogo ordenado por nombre)");
+      int tipo = Utils.leerEntero("Tipo: ", 1, 2);
+      if (tipo == 2) {
+        Utils.info("Si el catálogo no está ordenado por nombre, se ordena primero.");
+      }
+
       String nombre = Utils.leerTexto("¿Qué producto quieres buscar? (nombre exacto): ");
-      ResultadoBusqueda resultado = catalogo.buscarProductoBinario(nombre);
+      ResultadoBusqueda resultado = tipo == 1
+          ? catalogo.buscarProductoLineal(nombre)
+          : catalogo.buscarProductoBinario(nombre);
       Producto producto = resultado.getProducto();
 
       if (producto == null) {
@@ -162,7 +226,7 @@ public class MainGuiado {
   }
 
   private static void pasoBuscarUbicacion() {
-    encabezado(8, "BUSCAR UBICACIÓN EN EL ALMACÉN");
+    encabezado(9, "BUSCAR UBICACIÓN EN EL ALMACÉN");
     System.out.println("Busca en qué pasillo está un producto usando su SKU (ej: SKU-003).");
 
     do {
@@ -178,7 +242,7 @@ public class MainGuiado {
   }
 
   private static void pasoRetirarProducto() {
-    encabezado(9, "RETIRAR UN PRODUCTO DE SU UBICACIÓN");
+    encabezado(10, "RETIRAR UN PRODUCTO DE SU UBICACIÓN");
     if (Almacen.estantesOcupados() == 0) {
       Utils.info("No hay productos en el almacén. Paso omitido.");
       Utils.pausa();
@@ -203,8 +267,8 @@ public class MainGuiado {
   }
 
   private static void pasoEliminarProducto() {
-    encabezado(10, "ELIMINAR UN PRODUCTO DEL CATÁLOGO");
-    System.out.println("Productos actuales:");
+    encabezado(11, "ELIMINAR UN PRODUCTO DEL CATÁLOGO");
+    System.out.println("Catálogo antes de eliminar:");
     catalogo.mostrarTabla();
     System.out.println();
 
@@ -223,11 +287,15 @@ public class MainGuiado {
       Utils.info("También se retiró de " + Almacen.describirUbicacion(ubicacion[0], ubicacion[1]) + ".");
     }
     Utils.exito(eliminado.getNombre() + " eliminado del catálogo.");
+
+    System.out.println();
+    System.out.println("Catálogo después de eliminar:");
+    catalogo.mostrarTabla();
     Utils.pausa();
   }
 
   private static void pasoResumenFinal() {
-    encabezado(11, "ESTADO FINAL");
+    encabezado(12, "ESTADO FINAL");
     System.out.println("Así terminan tu catálogo y tu almacén:");
     System.out.println();
     catalogo.mostrarTabla();

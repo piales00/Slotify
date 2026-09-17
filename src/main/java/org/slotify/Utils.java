@@ -1,18 +1,8 @@
-package org.Catalogo;
+package org.slotify;
 
 import java.util.Scanner;
 
 public class Utils {
-
-  public static final String RESET = "[0m";
-  public static final String NEGRITA = "[1m";
-  public static final String TENUE = "[2m";
-  public static final String ROJO = "[31m";
-  public static final String VERDE = "[32m";
-  public static final String AMARILLO = "[33m";
-  public static final String AZUL = "[34m";
-  public static final String CIAN = "[36m";
-  public static final String GRIS = "[90m";
 
   public static Producto crearNuevoProducto() {
     Producto p = new Producto();
@@ -40,7 +30,6 @@ public class Utils {
     }
     return false;
   }
-
 
   public static String leerTexto(String mensaje) {
     Scanner sc = SharedScanner.getInstancia().getScanner();
@@ -108,42 +97,27 @@ public class Utils {
   }
 
   public static void pausa() {
-    System.out.print(GRIS + "\nPresiona ENTER para continuar..." + RESET);
+    System.out.print("\nPresiona ENTER para continuar...");
     SharedScanner.getInstancia().getScanner().nextLine();
   }
-
 
   public static void titulo(String texto) {
     String linea = "═".repeat(texto.length() + 4);
     System.out.println();
-    System.out.println(CIAN + "╔" + linea + "╗");
-    System.out.println("║  " + NEGRITA + texto + RESET + CIAN + "  ║");
-    System.out.println("╚" + linea + "╝" + RESET);
+    System.out.println("╔" + linea + "╗");
+    System.out.println("║  " + texto + "  ║");
+    System.out.println("╚" + linea + "╝");
   }
 
   public static void exito(String texto) {
-    System.out.println(VERDE + "✔ " + texto + RESET);
+    System.out.println("✔ " + texto);
   }
 
   public static void error(String texto) {
-    System.out.println(ROJO + "✘ " + texto + RESET);
+    System.out.println("✘ " + texto);
   }
 
   public static void info(String texto) {
-    System.out.println(AZUL + "ℹ " + texto + RESET);
-  }
-
-  public static String colorClasificacion(String clasificacion) {
-    if (clasificacion == null) {
-      return GRIS;
-    }
-    switch (clasificacion) {
-      case "A":
-        return VERDE;
-      case "B":
-        return AMARILLO;
-      default:
-        return ROJO;
-    }
+    System.out.println("ℹ " + texto);
   }
 }
