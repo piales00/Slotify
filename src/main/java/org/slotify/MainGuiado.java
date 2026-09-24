@@ -298,48 +298,42 @@ public class MainGuiado {
 
   private static void pasoPedidos() {
     encabezado(12, "PEDIDOS (LISTA ENLAZADA)");
-    System.out.println("Los pedidos no se guardan en un array como el catálogo, sino en una lista enlazada:");
-    System.out.println("cada nodo guarda un pedido y apunta al siguiente, así que la lista crece y");
-    System.out.println("decrece sin tener un tamaño máximo fijo.");
+    System.out.println("Los pedidos se guardan en una lista enlazada: cada nodo lleva un pedido y");
+    System.out.println("apunta al siguiente, así que la lista crece y decrece sin un tamaño fijo.");
     System.out.println();
+
     DatosIniciales.cargarPedidos(pedidos);
-    Utils.info("Se cargaron " + pedidos.getNumeroActualPedidos() + " pedidos de ejemplo. Puedes insertar y eliminar los que quieras.");
+    mostrarPedidos("Pedidos de ejemplo");
+
     System.out.println();
+    System.out.println("Primero vas a insertar un pedido al inicio: será la nueva cabeza de la lista.");
+    insertarPedido(true);
+    mostrarPedidos("Lista tras insertar al inicio");
 
-    boolean continuar = true;
-    while (continuar) {
-      System.out.println("Pedidos registrados (" + pedidos.getNumeroActualPedidos() + "):");
-      pedidos.mostrarTabla();
-      if (!pedidos.estaVacia()) {
-        System.out.println();
-        pedidos.mostrarEnlaces();
-      }
-      System.out.println();
-      System.out.println("¿Qué quieres hacer?");
-      System.out.println("  1) Insertar un pedido al inicio de la lista");
-      System.out.println("  2) Insertar un pedido al final de la lista");
-      System.out.println("  3) Eliminar un pedido por su código");
-      System.out.println("  4) Terminar con los pedidos");
-      int opcion = Utils.leerEntero("Opción: ", 1, 4);
+    System.out.println();
+    System.out.println("Ahora uno al final: se recorre la lista hasta el último nodo y se engancha ahí.");
+    insertarPedido(false);
+    mostrarPedidos("Lista tras insertar al final");
 
-      switch (opcion) {
-        case 1 -> insertarPedido(true);
-        case 2 -> insertarPedido(false);
-        case 3 -> eliminarPedido();
-        case 4 -> continuar = false;
-      }
-      System.out.println();
-    }
+    System.out.println();
+    System.out.println("Por último elimina un pedido: el nodo anterior pasará a apuntar al siguiente.");
+    eliminarPedido();
+    mostrarPedidos("Lista tras eliminar");
     Utils.pausa();
   }
 
-  private static void insertarPedido(boolean alInicio) {
-    if (catalogo.numeroActualProductos == 0) {
-      Utils.error("El catálogo está vacío, no hay nada que pedir.");
-      return;
+  private static void mostrarPedidos(String titulo) {
+    System.out.println();
+    System.out.println(titulo + " (" + pedidos.getNumeroActualPedidos() + "):");
+    pedidos.mostrarTabla();
+    if (!pedidos.estaVacia()) {
+      System.out.println();
+      pedidos.mostrarEnlaces();
     }
+  }
 
-    String codigo = Utils.leerTexto("Código del pedido (ej: PED-001): ").toUpperCase();
+  private static void insertarPedido(boolean alInicio) {
+    String codigo = Utils.leerTexto("Código del pedido (ej: PED-010): ").toUpperCase();
     while (pedidos.existeCodigo(codigo)) {
       Utils.error("Ya existe un pedido con el código " + codigo + ".");
       codigo = Utils.leerTexto("Introduce otro código: ").toUpperCase();
@@ -369,19 +363,15 @@ public class MainGuiado {
   }
 
   private static void eliminarPedido() {
-    if (pedidos.estaVacia()) {
-      Utils.error("No hay pedidos que eliminar.");
-      return;
-    }
-
-    String codigo = Utils.leerTexto("Código del pedido a eliminar: ");
-    Pedido eliminado = pedidos.eliminarPorCodigo(codigo);
-    if (eliminado == null) {
-      Utils.error("No existe ningún pedido con el código " + codigo.toUpperCase() + ".");
-      return;
+    Pedido eliminado = null;
+    while (eliminado == null) {
+      String codigo = Utils.leerTexto("Código del pedido a eliminar: ");
+      eliminado = pedidos.eliminarPorCodigo(codigo);
+      if (eliminado == null) {
+        Utils.error("No existe ningún pedido con el código " + codigo.toUpperCase() + ". Inténtalo de nuevo.");
+      }
     }
     Utils.exito("Pedido eliminado: " + eliminado);
-    Utils.info("El nodo anterior pasó a apuntar al siguiente, así que el nodo eliminado queda fuera.");
   }
 
   private static void pasoResumenFinal() {

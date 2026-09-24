@@ -20,7 +20,7 @@ public class ListaPedidos {
   }
 
   // Inserta al principio: el pedido nuevo pasa a ser la cabeza y apunta a la
-  // cabeza anterior. No hay que recorrer nada, por eso cuesta O(1).
+  // cabeza anterior.
   public void insertarAlInicio(Pedido pedido) {
     Nodo nuevo = new Nodo(pedido);
     nuevo.setSiguiente(cabeza);
