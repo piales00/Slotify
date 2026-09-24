@@ -20,4 +20,12 @@ public class DatosIniciales {
     catalogo.agregarProducto(new Producto("Rodamientos", "SKU-011", "Ferretería", 0.004, 1.2, 90, "A", "Manual"));
     catalogo.agregarProducto(new Producto("Transformador", "SKU-012", "Eléctrico", 0.80, 320.0, 2, "C", "Grúa"));
   }
+
+  public static void cargarPedidos(ListaPedidos pedidos) {
+    pedidos.insertarAlFinal(new Pedido("PED-001", "Taller Duarte", "SKU-001", 4));
+    pedidos.insertarAlFinal(new Pedido("PED-002", "Industrias Vega", "SKU-003", 10));
+    pedidos.insertarAlFinal(new Pedido("PED-003", "Taller Duarte", "SKU-008", 2));
+    pedidos.insertarAlFinal(new Pedido("PED-004", "Montajes Lira", "SKU-010", 25));
+    pedidos.insertarAlFinal(new Pedido("PED-005", "Industrias Vega", "SKU-005", 6));
+  }
 }

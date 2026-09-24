@@ -2,13 +2,14 @@ package org.slotify;
 
 public class MainGuiado {
 
-  private static final int TOTAL_PASOS = 12;
+  private static final int TOTAL_PASOS = 13;
   private static final Catalogo catalogo = new Catalogo(50);
+  private static final ListaPedidos pedidos = new ListaPedidos();
 
   public static void main(String[] args) {
     Utils.titulo("SLOTIFY · Recorrido guiado");
     System.out.println("Te acompañaremos paso a paso: crearás tu almacén, lo llenaremos de productos");
-    System.out.println("y probarás la actualización, las búsquedas, el ordenamiento y la eliminación.");
+    System.out.println("probarás la actualización, las búsquedas, el ordenamiento, la eliminación y los pedidos.");
     Utils.pausa();
 
     pasoCrearAlmacen();
@@ -22,6 +23,7 @@ public class MainGuiado {
     pasoBuscarUbicacion();
     pasoRetirarProducto();
     pasoEliminarProducto();
+    pasoPedidos();
     pasoResumenFinal();
 
     Utils.exito("¡Recorrido completado! Gracias por usar Slotify.");
@@ -294,13 +296,103 @@ public class MainGuiado {
     Utils.pausa();
   }
 
+  private static void pasoPedidos() {
+    encabezado(12, "PEDIDOS (LISTA ENLAZADA)");
+    System.out.println("Los pedidos no se guardan en un array como el catálogo, sino en una lista enlazada:");
+    System.out.println("cada nodo guarda un pedido y apunta al siguiente, así que la lista crece y");
+    System.out.println("decrece sin tener un tamaño máximo fijo.");
+    System.out.println();
+    DatosIniciales.cargarPedidos(pedidos);
+    Utils.info("Se cargaron " + pedidos.getNumeroActualPedidos() + " pedidos de ejemplo. Puedes insertar y eliminar los que quieras.");
+    System.out.println();
+
+    boolean continuar = true;
+    while (continuar) {
+      System.out.println("Pedidos registrados (" + pedidos.getNumeroActualPedidos() + "):");
+      pedidos.mostrarTabla();
+      if (!pedidos.estaVacia()) {
+        System.out.println();
+        pedidos.mostrarEnlaces();
+      }
+      System.out.println();
+      System.out.println("¿Qué quieres hacer?");
+      System.out.println("  1) Insertar un pedido al inicio de la lista");
+      System.out.println("  2) Insertar un pedido al final de la lista");
+      System.out.println("  3) Eliminar un pedido por su código");
+      System.out.println("  4) Terminar con los pedidos");
+      int opcion = Utils.leerEntero("Opción: ", 1, 4);
+
+      switch (opcion) {
+        case 1 -> insertarPedido(true);
+        case 2 -> insertarPedido(false);
+        case 3 -> eliminarPedido();
+        case 4 -> continuar = false;
+      }
+      System.out.println();
+    }
+    Utils.pausa();
+  }
+
+  private static void insertarPedido(boolean alInicio) {
+    if (catalogo.numeroActualProductos == 0) {
+      Utils.error("El catálogo está vacío, no hay nada que pedir.");
+      return;
+    }
+
+    String codigo = Utils.leerTexto("Código del pedido (ej: PED-001): ").toUpperCase();
+    while (pedidos.existeCodigo(codigo)) {
+      Utils.error("Ya existe un pedido con el código " + codigo + ".");
+      codigo = Utils.leerTexto("Introduce otro código: ").toUpperCase();
+    }
+
+    String cliente = Utils.leerTexto("Cliente: ");
+
+    Producto producto = null;
+    while (producto == null) {
+      String sku = Utils.leerTexto("SKU del producto pedido (ej: SKU-001): ");
+      producto = catalogo.buscarProductoPorSKU(sku);
+      if (producto == null) {
+        Utils.error("No existe ningún producto con ese SKU en el catálogo. Inténtalo de nuevo.");
+      }
+    }
+
+    int cantidad = Utils.leerEntero("Cantidad: ", 1, Integer.MAX_VALUE);
+    Pedido pedido = new Pedido(codigo, cliente, producto.getSKU(), cantidad);
+
+    if (alInicio) {
+      pedidos.insertarAlInicio(pedido);
+      Utils.exito("Pedido " + codigo + " insertado al inicio: ahora es la cabeza de la lista.");
+    } else {
+      pedidos.insertarAlFinal(pedido);
+      Utils.exito("Pedido " + codigo + " insertado al final: se enganchó al último nodo.");
+    }
+  }
+
+  private static void eliminarPedido() {
+    if (pedidos.estaVacia()) {
+      Utils.error("No hay pedidos que eliminar.");
+      return;
+    }
+
+    String codigo = Utils.leerTexto("Código del pedido a eliminar: ");
+    Pedido eliminado = pedidos.eliminarPorCodigo(codigo);
+    if (eliminado == null) {
+      Utils.error("No existe ningún pedido con el código " + codigo.toUpperCase() + ".");
+      return;
+    }
+    Utils.exito("Pedido eliminado: " + eliminado);
+    Utils.info("El nodo anterior pasó a apuntar al siguiente, así que el nodo eliminado queda fuera.");
+  }
+
   private static void pasoResumenFinal() {
-    encabezado(12, "ESTADO FINAL");
-    System.out.println("Así terminan tu catálogo y tu almacén:");
+    encabezado(13, "ESTADO FINAL");
+    System.out.println("Así terminan tu catálogo, tu almacén y tus pedidos:");
     System.out.println();
     catalogo.mostrarTabla();
     System.out.println();
     Almacen.mostrarAlmacen();
+    System.out.println();
+    pedidos.mostrarTabla();
     System.out.println();
   }
 
