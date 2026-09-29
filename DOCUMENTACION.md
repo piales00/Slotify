@@ -22,6 +22,8 @@ Slotify es una aplicación de consola en Java que simula la gestión de un **alm
    - [Almacen](#68-almacen)
    - [DatosIniciales](#69-datosiniciales)
    - [MainGuiado](#610-mainguiado)
+   - [Nodo, Pedido y ResultadoBusquedaPedido](#611-nodo-pedido-y-resultadobusquedapedido)
+   - [ListaPedidos](#612-listapedidos)
 7. [Resumen de algoritmos de ordenamiento](#7-resumen-de-algoritmos-de-ordenamiento)
 8. [Resumen de algoritmos de búsqueda](#8-resumen-de-algoritmos-de-búsqueda)
 9. [Patrones de diseño utilizados](#9-patrones-de-diseño-utilizados)
@@ -40,7 +42,7 @@ Slotify es una aplicación de consola en Java que simula la gestión de un **alm
 | Clase principal | `org.slotify.MainGuiado` |
 
 **Ejecución desde un IDE (NetBeans, IntelliJ, Eclipse):**
-1. Copiar los 10 archivos `.java` dentro de un mismo paquete.
+1. Copiar los 14 archivos `.java` dentro de un mismo paquete.
 2. Si el paquete no se llama `org.slotify`, cambiar la primera línea `package ...;` de cada archivo por el nombre del paquete destino.
 3. Ejecutar `MainGuiado`.
 
@@ -58,14 +60,19 @@ Todas las clases están en un único paquete: `org.slotify`.
 
 ```
 src/main/java/org/slotify/
-├── MainGuiado.java         Punto de entrada: recorrido guiado de 12 pasos
-├── DatosIniciales.java     Carga 12 productos de ejemplo
+├── MainGuiado.java         Punto de entrada: recorrido guiado de 13 pasos
+├── DatosIniciales.java     Carga 12 productos y 5 pedidos de ejemplo
 ├── Catalogo.java           Arreglo de productos: CRUD, búsquedas y 7 ordenamientos
 ├── Producto.java           Entidad producto (SKU, familia, peso, rotación, ABC...)
 ├── ResultadoBusqueda.java  Producto encontrado + número de comparaciones
 ├── Almacen.java            Matriz 2D de celdas: pasillos, estanterías, ubicación
 ├── Celda.java              Una posición de la matriz (estado, producto, pasillo)
 ├── EstadoProducto.java     Enum: VACIO, OCUPADO, PARED, PASILLO
+├── ListaPedidos.java       Lista enlazada de pedidos: altas, bajas, recorrido,
+│                        búsqueda y 3 ordenamientos sobre nodos
+├── Nodo.java               Nodo de la lista: dato (Pedido) + referencia al siguiente
+├── Pedido.java             Entidad pedido (código, cliente, SKU, cantidad)
+├── ResultadoBusquedaPedido.java  Pedido encontrado + comparaciones + posición
 ├── Utils.java              Lectura validada de datos y mensajes por consola
 └── SharedScanner.java      Scanner único compartido (Singleton)
 ```
@@ -104,7 +111,8 @@ MainGuiado ──usa──► Catalogo ──contiene──► Producto[]
 | 9 | Buscar ubicación | Dado un SKU, indica pasillo, fila y columna | `Almacen.buscarUbicacion`, `Almacen.describirUbicacion` |
 | 10 | Retirar de su ubicación | Vacía una celda; el producto sigue en el catálogo | `Almacen.eliminarProducto` |
 | 11 | Eliminar del catálogo | Elimina por nombre y lo retira también del almacén. Muestra la tabla antes y después | `Catalogo.eliminarProducto`, `Almacen.eliminarProducto` |
-| 12 | Estado final | Muestra el catálogo y el almacén resultantes | `mostrarTabla`, `mostrarAlmacen` |
+| 12 | Pedidos (lista enlazada) | Carga pedidos de ejemplo, inserta al inicio y al final, elimina, y luego recorre, busca y ordena la lista | `ListaPedidos.*` |
+| 13 | Estado final | Muestra el catálogo, el almacén y los pedidos resultantes | `mostrarTabla`, `mostrarAlmacen` |
 
 ---
 
@@ -518,6 +526,106 @@ La complejidad de cada paso es la de los métodos que llama (más el tiempo de e
 
 ---
 
+### 6.11 `Nodo`, `Pedido` y `ResultadoBusquedaPedido`
+
+**`Nodo`** es la pieza de la lista enlazada: guarda un `Pedido` (`dato`) y la referencia al siguiente nodo (`siguiente`). El último nodo tiene `siguiente = null`, que es la marca de fin de la lista.
+
+**`Pedido`** guarda `codigo`, `cliente`, `SKU` y `cantidad`. Guarda el **SKU** y no una copia del `Producto`: así, si el catálogo cambia el nombre o los datos del producto, el pedido nunca muestra información vieja.
+
+**`ResultadoBusquedaPedido`** es el equivalente de `ResultadoBusqueda` para pedidos: devuelve el pedido encontrado (o `null`), el número de comparaciones y la posición del nodo dentro de la lista (`-1` si no se encontró).
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `Nodo(Pedido dato)` | Crea un nodo con su dato y `siguiente = null` | O(1) | O(1) | Dos asignaciones |
+| `getDato()` / `setDato()` | Lee o cambia el pedido del nodo | O(1) | O(1) | Acceso directo |
+| `getSiguiente()` / `setSiguiente()` | Lee o cambia la referencia al siguiente nodo | O(1) | O(1) | Acceso directo |
+| `Pedido(codigo, cliente, SKU, cantidad)` | Crea un pedido | O(1) | O(1) | Número fijo de asignaciones |
+| Getters y setters de `Pedido` | Leen o cambian un atributo | O(1) | O(1) | Acceso directo |
+| `Pedido.toString()` | `"codigo - cliente pide cantidad x SKU"` | O(m) | O(m) | Concatena textos cortos |
+| `ResultadoBusquedaPedido(...)` y sus getters | Guardan y devuelven pedido, comparaciones y posición | O(1) | O(1) | Asignaciones y lecturas directas |
+
+---
+
+### 6.12 `ListaPedidos`
+
+Lista enlazada simple. Solo guarda la **cabeza** (`cabeza`) y un contador (`numeroActualPedidos`). A diferencia de `Catalogo`, **no tiene tamaño fijo**: pide memoria nodo a nodo, así que crece y decrece sin límite.
+
+En toda la clase `n` es el número de pedidos de la lista.
+
+#### 6.12.1 Altas y bajas
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `ListaPedidos()` | Crea la lista vacía (`cabeza = null`) | O(1) | O(1) | Dos asignaciones |
+| `getNumeroActualPedidos()` | Devuelve el contador | O(1) | O(1) | Acceso directo |
+| `estaVacia()` | `true` si no hay cabeza | O(1) | O(1) | Una comparación |
+| `insertarAlInicio(Pedido)` | El nodo nuevo apunta a la cabeza anterior y pasa a ser la cabeza | **O(1)** | O(1) | No recorre nada: dos cambios de referencia. Es justo lo contrario del arreglo, donde insertar al principio obliga a desplazar |
+| `insertarAlFinal(Pedido)` | Recorre hasta el nodo cuyo `siguiente` es `null` y engancha ahí el nuevo | O(n) | O(1) | Nadie guarda una referencia a la cola, así que hay que caminar la lista entera. Con un puntero `cola` sería O(1) |
+| `eliminarPorCodigo(String)` | Busca el nodo por código llevando el **anterior**; al encontrarlo hace `anterior.siguiente = actual.siguiente` | O(n) | O(1) | El O(n) es de **buscar**, no de borrar: desenganchar el nodo son dos asignaciones. Si el eliminado es la cabeza, `cabeza` pasa a ser el segundo nodo |
+
+#### 6.12.2 Recorrido
+
+Todos usan el mismo patrón: `actual = cabeza; while (actual != null) { ...; actual = actual.getSiguiente(); }`. En una lista **no hay índices**: la única forma de avanzar es seguir el enlace.
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `recorrer()` | Recorrido completo mostrando cada paso y a quién apunta cada nodo | O(n) | O(1) | Visita cada nodo una vez; solo usa una referencia auxiliar |
+| `contarNodos()` | Cuenta los nodos siguiendo los enlaces, sin mirar el contador | O(n) | O(1) | Una pasada completa |
+| `totalUnidades()` | Recorrido acumulador: suma las cantidades de todos los pedidos | O(n) | O(1) | Una pasada, un acumulador |
+| `obtenerPorPosicion(int k)` | Devuelve el pedido de la posición `k`, o `null` si no existe | **O(k)** | O(1) | Hay que caminar los `k` nodos anteriores. Aquí está la diferencia clave con el arreglo, donde `productos[k]` es O(1) |
+
+#### 6.12.3 Búsqueda
+
+**Solo puede ser lineal.** La búsqueda binaria necesita saltar al elemento del medio en O(1); en una lista, llegar al medio ya cuesta recorrer media lista, así que partir el rango no ahorra nada. **Ordenar la lista no acelera la búsqueda.**
+
+| Método | Descripción | Mejor | Promedio | Peor | Espacio |
+|---|---|---|---|---|---|
+| `buscarPorCodigo(String)` | Búsqueda lineal por código; devuelve un `ResultadoBusquedaPedido` con las comparaciones y la posición | O(1) | O(n) | O(n) | O(1) |
+| `buscarPorSKU(String)` | Devuelve el primer pedido que pide ese producto | O(1) | O(n) | O(n) | O(1) |
+| `contarPedidosDeCliente(String)` | Recorrido con filtro: cuántos pedidos hizo un cliente | O(n) | O(n) | O(n) | O(1) |
+| `existeCodigo(String)` | Comprueba si ya hay un pedido con ese código | O(1) | O(n) | O(n) | O(1) |
+
+#### 6.12.4 Ordenamiento
+
+Una lista enlazada se puede ordenar de dos formas, y el proyecto usa las dos para poder compararlas:
+
+- **Reenlazando nodos:** se cambian las referencias y los datos no se tocan. Es lo correcto en una lista: mover una referencia cuesta lo mismo aunque el dato sea enorme.
+- **Intercambiando datos:** los nodos se quedan donde están y se cambia el `dato` que llevan dentro. Más simple de escribir, pero copia contenido. Además, si alguien guardara una referencia a un nodo concreto, tras el intercambio esa referencia apuntaría a otro pedido.
+
+##### `ordenarPorCodigo()` · Insertion sort **reenlazando nodos**
+
+- **Criterio:** código del pedido, de la A a la Z.
+- **Funcionamiento:** se van sacando nodos de la lista original y se insertan en su lugar dentro de una lista nueva (`ordenada`) que siempre está ordenada. Antes de tocar `actual.siguiente` hay que **guardar `siguiente`**, o se pierde el resto de la lista.
+- **Complejidad temporal:** O(n²) (por cada nodo puede recorrer toda la parte ya ordenada). Mejor caso O(n) si los códigos ya vienen ordenados, porque cada nodo se engancha en el primer intento.
+- **Complejidad espacial:** **O(1)**: no se crea ni un solo nodo nuevo, solo cambian las referencias. Merge sort gastaría O(n).
+- **Estable:** sí (usa `<= 0` al avanzar, así que no adelanta empates).
+
+##### `ordenarPorCantidad()` · Selection sort **intercambiando datos**
+
+- **Criterio:** cantidad, de **mayor a menor**.
+- **Funcionamiento:** por cada nodo `i` busca en el resto de la lista el pedido con mayor cantidad e intercambia los **datos** de los dos nodos. Los enlaces no se tocan.
+- **Complejidad temporal:** O(n²) en todos los casos: siempre recorre lo que falta.
+- **Complejidad espacial:** O(1) (una variable temporal).
+- **Estable:** no (el intercambio a distancia puede adelantar empates).
+
+##### `ordenarPorCliente()` · Bubble sort **intercambiando datos**, con bandera
+
+- **Criterio:** cliente, de la A a la Z.
+- **Funcionamiento:** pasadas comparando cada nodo con su siguiente e intercambiando los datos si están en desorden. Lleva una bandera `huboIntercambio`: si una pasada no intercambia nada, la lista ya está ordenada y se corta.
+- **Complejidad temporal:** **mejor caso O(n)** gracias a la bandera (a diferencia del bubble de `Catalogo`, que siempre hace las `n(n-1)/2` comparaciones); promedio y peor caso O(n²).
+- **Complejidad espacial:** O(1).
+- **Estable:** sí (solo intercambia si la comparación es `> 0`).
+
+#### 6.12.5 Visualización
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `mostrarTabla()` | Imprime los pedidos en una tabla alineada | O(n) | O(1) | Un recorrido, formato constante por fila |
+| `mostrarEnlaces()` | Dibuja `cabeza → [PED-001] → [PED-002] → null` para ver cómo está armada la lista | O(n) | O(1) | Un recorrido imprimiendo cada código |
+
+
+---
+
 ## 7. Resumen de algoritmos de ordenamiento
 
 | # | Algoritmo | Método | Criterio | Mejor | Promedio | Peor | Espacio | Estable |
@@ -531,6 +639,16 @@ La complejidad de cada paso es la de los métodos que llama (más el tiempo de e
 | 7 | Heap sort | `ordenarProductosPorFamilia` | Familia (A→Z) | O(n log n) | O(n log n) | O(n log n) | O(1)* | No |
 
 \* Heap sort no usa arreglos auxiliares; la recursión de `hundir` ocupa O(log n) de pila.
+
+**Ordenamientos de la lista enlazada (`ListaPedidos`)** — no comparten arreglo con los anteriores, trabajan sobre nodos:
+
+| # | Algoritmo | Método | Criterio | Técnica | Mejor | Promedio | Peor | Espacio | Estable |
+|---|---|---|---|---|---|---|---|---|---|
+| 8 | Insertion sort | `ordenarPorCodigo` | Código (A→Z) | Reenlaza nodos | O(n) | O(n²) | O(n²) | O(1) | Sí |
+| 9 | Selection sort | `ordenarPorCantidad` | Cantidad (mayor→menor) | Intercambia datos | O(n²) | O(n²) | O(n²) | O(1) | No |
+| 10 | Bubble sort | `ordenarPorCliente` | Cliente (A→Z) | Intercambia datos | O(n) | O(n²) | O(n²) | O(1) | Sí |
+
+No se implementan merge, quick ni heap sobre la lista: merge sort sería viable y daría O(n log n), pero quick y heap necesitan acceso por índice, que en una lista enlazada cuesta O(k).
 
 **Estable** significa que dos productos con el mismo valor del criterio conservan el orden relativo que tenían antes de ordenar.
 
@@ -551,6 +669,10 @@ La complejidad de cada paso es la de los métodos que llama (más el tiempo de e
 | Lineal por SKU | `buscarProductoPorSKU` | Ninguno | O(1) | O(n) | O(n) | O(1) |
 | Binaria por nombre | `buscarProductoBinario` | Arreglo ordenado por nombre (lo ordena si hace falta) | O(1) | O(log n) | O(log n) | O(1) |
 | Ubicación por SKU en la matriz | `Almacen.buscarUbicacion` | Ninguno | O(1) | O(F·C) | O(F·C) | O(1) |
+| Código en la lista enlazada | `ListaPedidos.buscarPorCodigo` | Ninguno | O(1) | O(n) | O(n) | O(1) |
+| SKU en la lista enlazada | `ListaPedidos.buscarPorSKU` | Ninguno | O(1) | O(n) | O(n) | O(1) |
+
+**Por qué en la lista enlazada no hay búsqueda binaria:** la binaria necesita ir al elemento del medio en O(1). En una lista, llegar al medio cuesta recorrer media lista, así que los `log n` saltos costarían O(n) cada uno: sería **peor** que la búsqueda lineal. Ordenar la lista no acelera sus búsquedas.
 
 Ejemplo real del programa con 13 productos:
 - Búsqueda lineal de `Casco` → 5 comparaciones.
@@ -565,7 +687,8 @@ Ejemplo real del programa con 13 productos:
 |---|---|---|
 | **Singleton** | `Almacen` | Garantiza que exista un único almacén compartido por todo el programa |
 | **Singleton (holder idiom)** | `SharedScanner` | Un único `Scanner` sobre `System.in`, creado de forma perezosa y segura para hilos |
-| **Objeto de resultado** | `ResultadoBusqueda` | Devolver dos valores (producto y comparaciones) desde un método |
+| **Objeto de resultado** | `ResultadoBusqueda`, `ResultadoBusquedaPedido` | Devolver varios valores (el elemento, las comparaciones y, en la lista, la posición) desde un método |
+| **Lista enlazada** | `ListaPedidos` + `Nodo` | Colección dinámica: altas y bajas baratas sin tamaño fijo |
 | **Enumeración de estados** | `EstadoProducto` | Limitar los estados de una celda a valores válidos y usarlos en `switch` |
 | **Clase utilitaria** | `Utils` | Centralizar la lectura validada y los mensajes para no repetir código |
 

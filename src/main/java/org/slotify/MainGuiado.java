@@ -316,10 +316,107 @@ public class MainGuiado {
     mostrarPedidos("Lista tras insertar al final");
 
     System.out.println();
-    System.out.println("Por último elimina un pedido: el nodo anterior pasará a apuntar al siguiente.");
+    System.out.println("Ahora elimina un pedido: el nodo anterior pasará a apuntar al siguiente.");
     eliminarPedido();
     mostrarPedidos("Lista tras eliminar");
     Utils.pausa();
+
+    recorrerPedidos();
+    buscarPedido();
+    ordenarPedidos();
+    Utils.pausa();
+  }
+
+  // RECORRIDO: caminar la lista nodo por nodo desde la cabeza.
+  private static void recorrerPedidos() {
+    System.out.println();
+    Utils.titulo("RECORRIDO DE LA LISTA");
+    System.out.println("No hay índices: se empieza en la cabeza y se siguen los enlaces uno a uno.");
+    System.out.println();
+    pedidos.recorrer();
+
+    System.out.println();
+    Utils.info("Nodos contados siguiendo enlaces: " + pedidos.contarNodos()
+        + "  (el contador dice " + pedidos.getNumeroActualPedidos() + ")");
+    Utils.info("Unidades pedidas en total: " + pedidos.totalUnidades());
+
+    if (!pedidos.estaVacia()) {
+      int posicion = Utils.leerEntero("¿Qué posición quieres leer? (0 a "
+          + (pedidos.getNumeroActualPedidos() - 1) + "): ", 0, pedidos.getNumeroActualPedidos() - 1);
+      Pedido pedido = pedidos.obtenerPorPosicion(posicion);
+      Utils.exito("nodo[" + posicion + "] = " + pedido);
+      Utils.info("Costó " + (posicion + 1) + " salto(s). En un arreglo habría sido un acceso directo.");
+    }
+  }
+
+  // BÚSQUEDA: lineal, contando comparaciones. En una lista no cabe la binaria.
+  private static void buscarPedido() {
+    System.out.println();
+    Utils.titulo("BÚSQUEDA EN LA LISTA");
+    System.out.println("Solo puede ser lineal: para llegar al nodo del medio ya habría que");
+    System.out.println("recorrer media lista, así que la búsqueda binaria no aporta nada aquí.");
+    System.out.println();
+
+    boolean repetir = true;
+    while (repetir) {
+      String codigo = Utils.leerTexto("Código del pedido a buscar (ej: PED-002): ");
+      ResultadoBusquedaPedido resultado = pedidos.buscarPorCodigo(codigo);
+
+      if (resultado.getPedido() == null) {
+        Utils.error("No existe ningún pedido con ese código.");
+        Utils.info("Se recorrió la lista entera: " + resultado.getComparaciones() + " comparación(es).");
+      } else {
+        Utils.exito("Encontrado: " + resultado.getPedido());
+        Utils.info("Estaba en la posición " + resultado.getPosicion()
+            + " y costó " + resultado.getComparaciones() + " comparación(es).");
+      }
+
+      repetir = Utils.confirmar("¿Quieres buscar otro pedido?");
+    }
+
+    String sku = Utils.leerTexto("SKU para buscar el primer pedido que lo pide (ej: SKU-001): ");
+    Pedido porSKU = pedidos.buscarPorSKU(sku);
+    if (porSKU == null) {
+      Utils.error("Ningún pedido de la lista incluye ese SKU.");
+    } else {
+      Utils.exito("Primer pedido con ese SKU: " + porSKU);
+      Utils.info("Pedidos de " + porSKU.getCliente() + ": " + pedidos.contarPedidosDeCliente(porSKU.getCliente()));
+    }
+  }
+
+  // ORDENAMIENTO: reenlazando nodos o intercambiando datos.
+  private static void ordenarPedidos() {
+    System.out.println();
+    Utils.titulo("ORDENAR LA LISTA");
+    System.out.println("Una lista se puede ordenar de dos formas: cambiando los enlaces entre");
+    System.out.println("nodos, o dejando los nodos quietos e intercambiando los datos.");
+
+    boolean repetir = true;
+    while (repetir) {
+      System.out.println();
+      System.out.println("  1) Por código      · Insertion sort REENLAZANDO nodos   · O(n²), estable");
+      System.out.println("  2) Por cantidad ↓  · Selection sort intercambiando datos · O(n²), no estable");
+      System.out.println("  3) Por cliente     · Bubble sort intercambiando datos    · O(n) si ya está ordenada");
+      int opcion = Utils.leerEntero("Elige un ordenamiento (1-3): ", 1, 3);
+
+      switch (opcion) {
+        case 1 -> {
+          pedidos.ordenarPorCodigo();
+          Utils.exito("Lista ordenada por código: se movieron los enlaces, no los datos.");
+        }
+        case 2 -> {
+          pedidos.ordenarPorCantidad();
+          Utils.exito("Lista ordenada por cantidad (mayor a menor): se intercambiaron los datos.");
+        }
+        case 3 -> {
+          pedidos.ordenarPorCliente();
+          Utils.exito("Lista ordenada por cliente: bubble sort con bandera de corte.");
+        }
+      }
+
+      mostrarPedidos("Lista ordenada");
+      repetir = Utils.confirmar("¿Quieres probar otro ordenamiento?");
+    }
   }
 
   private static void mostrarPedidos(String titulo) {
