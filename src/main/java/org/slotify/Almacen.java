@@ -296,6 +296,18 @@ public class Almacen {
     return fila >= 0 && fila < INSTANCIA.filas && columna >= 0 && columna < INSTANCIA.columnas;
   }
 
+  public static int getEntradaFila() {
+    return INSTANCIA.entradaFila;
+  }
+
+  public static int getEntradaColumna() {
+    return INSTANCIA.entradaColumna;
+  }
+
+  public static int pasilloDe(int fila, int columna) {
+    return INSTANCIA.almacen[fila][columna].getPasillo();
+  }
+
   public int getFilas() {
     return filas;
   }

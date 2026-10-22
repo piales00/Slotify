@@ -73,6 +73,12 @@ src/main/java/org/slotify/
 ├── Nodo.java               Nodo de la lista: dato (Pedido) + referencia al siguiente
 ├── Pedido.java             Entidad pedido (código, cliente, SKU, cantidad)
 ├── ResultadoBusquedaPedido.java  Pedido encontrado + comparaciones + posición
+├── TipoCambio.java         Enum: COLOCAR, RETIRAR
+├── Cambio.java             Un cambio del almacén (tipo, producto, celda)
+├── PilaCambios.java        Pila estática (arreglo + tope) para deshacer cambios
+├── Parada.java             Punto de la ruta de picking (pedido, SKU, celda, pasillo)
+├── NodoParada.java         Nodo de la ruta: dato (Parada) + referencia al siguiente
+├── RutaPicking.java        Lista circular: dock → paradas → dock, en serpentina
 ├── Utils.java              Lectura validada de datos y mensajes por consola
 └── SharedScanner.java      Scanner único compartido (Singleton)
 ```
@@ -113,6 +119,13 @@ MainGuiado ──usa──► Catalogo ──contiene──► Producto[]
 | 11 | Eliminar del catálogo | Elimina por nombre y lo retira también del almacén. Muestra la tabla antes y después | `Catalogo.eliminarProducto`, `Almacen.eliminarProducto` |
 | 12 | Pedidos (lista enlazada) | Carga pedidos de ejemplo, inserta al inicio y al final, elimina, y luego recorre, busca y ordena la lista | `ListaPedidos.*` |
 | 13 | Estado final | Muestra el catálogo, el almacén y los pedidos resultantes | `mostrarTabla`, `mostrarAlmacen` |
+
+`MainFachada` hace el mismo recorrido a través de la fachada `Slotify` y agrega dos pasos (15 en total):
+
+| Paso | Nombre | Qué hace | Métodos principales |
+|---|---|---|---|
+| 11 | Deshacer cambios (pila estática) | Muestra la pila con lo que se colocó y retiró en los pasos 5 y 10, y deshace el último cambio las veces que el usuario quiera | `Slotify.deshacer`, `PilaCambios.pop`, `PilaCambios.mostrar` |
+| 14 | Ruta de picking (lista circular) | Arma la ruta dock → pedidos → dock, la muestra antes y después de ordenarla en serpentina con la distancia total, la recorre y permite recoger paradas | `Slotify.armarRuta`, `RutaPicking.ordenarSerpentina`, `RutaPicking.recorrer`, `RutaPicking.recogerParada` |
 
 ---
 
@@ -622,6 +635,86 @@ Una lista enlazada se puede ordenar de dos formas, y el proyecto usa las dos par
 |---|---|---|---|---|
 | `mostrarTabla()` | Imprime los pedidos en una tabla alineada | O(n) | O(1) | Un recorrido, formato constante por fila |
 | `mostrarEnlaces()` | Dibuja `cabeza → [PED-001] → [PED-002] → null` para ver cómo está armada la lista | O(n) | O(1) | Un recorrido imprimiendo cada código |
+| `aArreglo()` | Copia los pedidos, en orden, a un arreglo de tamaño `n`. Lo usa `Slotify.armarRuta()` | O(n) | O(n) | Una pasada; el arreglo nuevo ocupa `n` posiciones |
+
+---
+
+### 6.13 `Cambio`, `TipoCambio` y `PilaCambios`
+
+**`TipoCambio`** es un enum con `COLOCAR` y `RETIRAR`. **`Cambio`** guarda una operación hecha sobre el almacén: el tipo, el `Producto` y la celda (`fila`, `columna`). Su `toString()` da algo como `"Retiró SKU-003 (Tornillos M8 (caja)) de (7, 2)"`.
+
+**`PilaCambios`** es una **pila estática**: un arreglo `Cambio[]` de tamaño fijo (`CAPACIDAD_HISTORIAL = 10` en `Slotify`) y un índice `tope` que señala el último elemento apilado. `tope = -1` significa pila vacía. Sirve para **deshacer**: lo último que se hizo es lo primero que se deshace (LIFO).
+
+```
+índice:    0           1           2          3  ...  9
+        [Retiró…]  [Retiró…]  [Colocó…]   null ... null
+                                  ↑
+                               tope = 2
+```
+
+En toda la clase `c` es la capacidad del arreglo y `k` el número de cambios apilados.
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `PilaCambios(int capacidad)` | Reserva el arreglo y pone `tope = -1` | O(c) | O(c) | Java reserva e inicializa las `c` posiciones de una vez |
+| `estaVacia()` | `tope == -1` | O(1) | O(1) | Una comparación |
+| `estaLlena()` | `tope == capacidad - 1` | O(1) | O(1) | Una comparación |
+| `tamano()` / `getCapacidad()` | `tope + 1` / largo del arreglo | O(1) | O(1) | Acceso directo |
+| `push(Cambio)` | Sube `tope` y guarda el cambio en `elementos[tope]`. Si está llena avisa **desbordamiento** y devuelve `false` | **O(1)** | O(1) | Solo escribe en la posición siguiente; nunca desplaza nada |
+| `pop()` | Devuelve `elementos[tope]`, deja esa posición en `null` y baja `tope`. Si está vacía devuelve `null` (**subdesbordamiento**) | **O(1)** | O(1) | Solo lee la última posición |
+| `peek()` | Devuelve el tope sin sacarlo | O(1) | O(1) | Acceso directo |
+| `vaciar()` | Hace `pop()` hasta que quede vacía | O(k) | O(1) | Un `pop` por elemento |
+| `mostrar()` | Imprime desde el tope hacia el fondo, marcando el tope | O(k) | O(1) | Recorre las `k` posiciones ocupadas |
+
+**Cómo la usa `Slotify`:**
+
+- `colocarProducto` y `retirarDeUbicacion` hacen `push` **solo si la operación salió bien**.
+- `deshacer()` hace `pop` y aplica la operación **contraria** llamando directamente a `Almacen`, no a los métodos de `Slotify`: si no, el propio deshacer se volvería a apilar.
+  - `COLOCAR` → retira el producto de esa celda, pero antes comprueba que siga ahí.
+  - `RETIRAR` → lo vuelve a colocar, pero antes comprueba que siga en el catálogo (se usa el objeto actual del catálogo, por si se actualizó) y que no esté ya colocado en otra celda.
+- `crearAlmacen` y `llenarAlmacen` **vacían la pila**: el almacén recién creado o llenado es el punto de partida, no un cambio que se pueda deshacer.
+
+**Por qué estática:** el historial de deshacer tiene un límite natural (los últimos 10 cambios), así que un arreglo de tamaño fijo alcanza y `push`/`pop` son O(1) sin pedir memoria nueva. La contra es el desbordamiento: con la pila llena, los cambios siguientes ya no se pueden deshacer. Una pila **dinámica** (lista enlazada donde `push` es `insertarAlInicio` y `pop` es borrar la cabeza) no tendría ese límite.
+
+---
+
+### 6.14 `Parada`, `NodoParada` y `RutaPicking`
+
+**`Parada`** es un punto de la ruta de picking: código del pedido, SKU, cantidad, celda (`fila`, `columna`) y pasillo. `Parada.dock(fila, columna)` crea la parada especial del **dock** (la entrada ▲). `distanciaA(otra)` devuelve la distancia Manhattan `|Δfila| + |Δcolumna|` en celdas.
+
+**`NodoParada`** es igual que `Nodo`, pero su dato es una `Parada`.
+
+**`RutaPicking`** es una **lista enlazada circular**: el operario sale del dock, pasa por cada parada y **vuelve al dock**. El dock es una cabeza fija que nunca se elimina, y la `cola` (la última parada) siempre apunta de vuelta a él. **No hay ningún `null`** en la lista.
+
+```
+[DOCK] → [PED-004] → [PED-001] → [PED-011] → [PED-003] ─┐
+   ↑                                                     │
+   └─────────────────────────────────────────────────────┘
+```
+
+Ruta vacía: el dock se apunta a sí mismo (`dock.siguiente == dock`, `cola == dock`).
+
+**El cambio clave respecto a `ListaPedidos` es la condición de parada:** `while (actual != null)` sería un bucle infinito. Se usa `do { ... } while (actual != dock)`. El `do-while` asegura que el primer tramo (desde el dock) se procese aunque `actual` empiece en el dock.
+
+En toda la clase `n` es el número de paradas.
+
+| Método | Descripción | Tiempo | Espacio | Por qué |
+|---|---|---|---|---|
+| `RutaPicking(filaDock, columnaDock)` | Crea el nodo del dock apuntándose a sí mismo | O(1) | O(1) | Un nodo, tres asignaciones |
+| `estaVacia()` / `getNumeroParadas()` | `dock.siguiente == dock` / el contador | O(1) | O(1) | Una comparación / acceso directo |
+| `agregarParada(Parada)` | El nuevo apunta al dock, la cola apunta al nuevo y el nuevo pasa a ser la cola | **O(1)** | O(1) | Gracias a la referencia `cola` no hay que recorrer. En `ListaPedidos.insertarAlFinal` esto es O(n) |
+| `recogerParada(String codigo)` | Busca la parada por código llevando el **anterior** y la desengancha. Si era la cola, `cola = anterior` | O(n) | O(1) | El O(n) es de buscar; desenganchar son dos asignaciones. Empezar con `anterior = dock` hace que borrar la primera parada no sea un caso especial |
+| `distanciaTotal()` | Suma la distancia de cada tramo, **incluido el regreso al dock** | O(n) | O(1) | `n + 1` tramos. El último tramo (cola → dock) es justo lo que la lista circular da gratis |
+| `recorrer()` | Muestra cada tramo con su distancia y el acumulado, desde el dock hasta volver a él | O(n) | O(1) | Un `do-while` completo |
+| `ordenarSerpentina()` | Ordena las paradas en **S-shape**: pasillo por pasillo, alternando subir y bajar | O(n²) | O(P) | Selection sort **intercambiando datos** (como `ordenarPorCantidad`); el dock no se mueve. `P` es el número del mayor pasillo con paradas |
+| `mostrarTabla()` | Tabla de paradas (sin el dock) | O(n) | O(1) | Un recorrido |
+| `mostrarEnlaces()` | Dibuja `[DOCK] → … → [DOCK] (vuelve al inicio)` | O(n) | O(n) | Un recorrido armando el texto |
+
+**Serpentina (S-shape):** las paradas se ordenan por número de pasillo. Dentro de un pasillo, la dirección se alterna según el **orden de visita** (no según si el número es par): el primer pasillo con paradas se recorre **subiendo** (de la fila más cercana al dock hacia arriba), el segundo **bajando**, y así. `ordenDeVisitaDePasillos()` calcula ese orden una sola vez en O(n + P), así la comparación es O(1).
+
+**Cómo la usa `Slotify`:** `armarRuta()` crea la ruta con el dock en la entrada del almacén, recorre los pedidos (`ListaPedidos.aArreglo()`), busca la celda de cada SKU con `Almacen.buscarUbicacion` y agrega una parada por pedido. Los pedidos cuyo producto no está colocado en el almacén quedan fuera de la ruta y se avisa. `Almacen` expone para esto `getEntradaFila()`, `getEntradaColumna()` y `pasilloDe(fila, columna)`, todos O(1).
+
+**Limitación conocida:** la distancia es Manhattan en celdas: no rodea estanterías ni paredes, así que es una aproximación de la distancia real que caminaría el operario.
 
 
 ---

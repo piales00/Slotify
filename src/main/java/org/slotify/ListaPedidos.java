@@ -317,6 +317,18 @@ public class ListaPedidos {
     }
   }
 
+  public Pedido[] aArreglo() {
+    Pedido[] arreglo = new Pedido[numeroActualPedidos];
+    int i = 0;
+    Nodo actual = cabeza;
+    while (actual != null) {
+      arreglo[i] = actual.getDato();
+      i++;
+      actual = actual.getSiguiente();
+    }
+    return arreglo;
+  }
+
   public void mostrarTabla() {
     if (estaVacia()) {
       System.out.println("  (no hay pedidos)");
