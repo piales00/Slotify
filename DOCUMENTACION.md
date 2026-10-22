@@ -120,12 +120,17 @@ MainGuiado ──usa──► Catalogo ──contiene──► Producto[]
 | 12 | Pedidos (lista enlazada) | Carga pedidos de ejemplo, inserta al inicio y al final, elimina, y luego recorre, busca y ordena la lista | `ListaPedidos.*` |
 | 13 | Estado final | Muestra el catálogo, el almacén y los pedidos resultantes | `mostrarTabla`, `mostrarAlmacen` |
 
-`MainFachada` hace el mismo recorrido a través de la fachada `Slotify` y agrega dos pasos (15 en total):
+`MainFachada` usa todo **a través de la fachada `Slotify`** y en vez de un recorrido fijo tiene un **menú**. Al arrancar pide el tamaño del almacén, carga el catálogo y los pedidos de ejemplo y llena el almacén; después el usuario elige opciones hasta salir con `0`:
 
-| Paso | Nombre | Qué hace | Métodos principales |
-|---|---|---|---|
-| 11 | Deshacer cambios (pila estática) | Muestra la pila con lo que se colocó y retiró en los pasos 5 y 10, y deshace el último cambio las veces que el usuario quiera | `Slotify.deshacer`, `PilaCambios.pop`, `PilaCambios.mostrar` |
-| 14 | Ruta de picking (lista circular) | Arma la ruta dock → pedidos → dock, la muestra antes y después de ordenarla en serpentina con la distancia total, la recorre y permite recoger paradas | `Slotify.armarRuta`, `RutaPicking.ordenarSerpentina`, `RutaPicking.recorrer`, `RutaPicking.recogerParada` |
+| Sección | Opciones |
+|---|---|
+| Almacén | 1 Ver almacén · 2 Productos por pasillo · 3 Buscar ubicación · 4 Colocar un producto del catálogo · 5 Retirar un producto |
+| Deshacer (pila estática) | 6 Deshacer último cambio · 7 Ver pila de cambios. El título muestra la ocupación (`2/10`) |
+| Catálogo (arreglo) | 8 Ver · 9 Agregar y colocar nuevo · 10 Actualizar · 11 Ordenar · 12 Buscar por nombre · 13 Eliminar |
+| Pedidos (lista enlazada) | 14 Ver · 15 Registrar (al inicio o al final) · 16 Eliminar · 17 Recorrer · 18 Buscar (código o SKU) · 19 Ordenar |
+| Ruta de picking (lista circular) | 20 Armar la ruta, ordenarla en serpentina, recorrerla y recoger paradas |
+
+Las opciones 4, 5 y 9 apilan el cambio y lo informan (`Apilado para deshacer: …`); la 6 lo saca y aplica la operación contraria.
 
 ---
 
